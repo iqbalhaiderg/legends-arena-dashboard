@@ -121,6 +121,24 @@
   .hero-meta .k{font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:600;}
   .hero-meta .v{font-size:17px; font-weight:700; font-family:'Manrope',sans-serif; margin-top:2px;}
 
+  /* filter bar */
+  .filter-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    background:var(--bg-surface); border:1px solid var(--border); border-radius:12px;
+    padding:10px 16px; margin-bottom:12px; font-size:12.5px; color:var(--text-secondary); box-shadow:var(--shadow);
+  }
+  .filter-bar .flabel{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .filter-bar .flabel > span{font-weight:700; color:var(--text-primary); font-size:12px; text-transform:uppercase; letter-spacing:0.04em;}
+  .period-select{
+    border:1px solid var(--border); background:var(--bg-surface-2); color:var(--text-primary);
+    font:inherit; font-size:13px; font-weight:700; padding:7px 30px 7px 12px; border-radius:8px; cursor:pointer;
+    appearance:none; -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23838f79' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 12px center;
+  }
+  .period-select:focus{outline:2px solid var(--accent); outline-offset:1px;}
+  .filter-note{font-size:11.5px; color:var(--text-muted);}
+
   /* live status bar */
   .live-bar{
     display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
@@ -254,6 +272,44 @@
   }
   .banner.show{display:flex;}
   .banner strong{display:block; margin-bottom:2px; color:var(--text-primary);}
+
+  /* P&L statement */
+  .pnl-head{display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:6px;}
+  .pnl-period{font-size:15px; font-weight:800; font-family:'Manrope',sans-serif;}
+  .print-btn{
+    display:inline-flex; align-items:center; gap:7px;
+    border:1px solid var(--border); background:var(--bg-surface-2); color:var(--text-primary);
+    font:inherit; font-size:12px; font-weight:700; padding:7px 13px; border-radius:8px; cursor:pointer;
+  }
+  .print-btn:hover{background:var(--accent-soft); color:var(--accent-strong);}
+  table.pnl{width:100%; border-collapse:collapse; font-size:13.5px;}
+  table.pnl th{
+    text-align:right; font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted);
+    font-weight:700; padding:0 0 10px; border-bottom:1px solid var(--border);
+  }
+  table.pnl th:first-child{text-align:left;}
+  table.pnl td{padding:8px 0; border-bottom:1px solid var(--border-soft); color:var(--text-secondary); text-align:right; font-variant-numeric:tabular-nums;}
+  table.pnl td:first-child{text-align:left; color:var(--text-primary);}
+  table.pnl tr.grp td:first-child{font-weight:800; color:var(--text-primary); padding-top:18px; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; color:var(--text-muted); border-bottom:none;}
+  table.pnl tr.grp:first-child td:first-child{padding-top:0;}
+  table.pnl tr.item td:first-child{padding-left:14px;}
+  table.pnl tr.sub td{font-weight:700; color:var(--text-primary); border-top:1px solid var(--border); border-bottom:1px solid var(--border);}
+  table.pnl tr.total td{font-weight:800; color:var(--text-primary); font-size:15px; border-top:2px solid var(--text-primary); border-bottom:2px solid var(--text-primary); padding:12px 0;}
+  table.pnl tr.total.neg td{color:var(--critical);}
+  table.pnl tr.total.pos td{color:var(--good);}
+  table.pnl td.pnl-delta{font-size:11.5px; font-weight:700;}
+  table.pnl .pnl-delta.up{color:var(--good);}
+  table.pnl .pnl-delta.down{color:var(--critical);}
+  table.pnl .pnl-delta.flat{color:var(--text-muted);}
+  .pnl-note{font-size:12px; color:var(--text-muted); margin-top:14px; padding-top:14px; border-top:1px solid var(--border);}
+
+  @media print{
+    body{background:#fff;}
+    .filter-bar, .live-bar, .banner, .refresh-btn, .print-btn,
+    section:not(#pnl-section), .foot-note{display:none !important;}
+    #pnl-section{margin:0;}
+    .card{box-shadow:none; border:1px solid #ccc;}
+  }
 </style>
 </head>
 <body>
@@ -278,6 +334,15 @@
     </div>
   </div>
 
+  <div class="filter-bar">
+    <div class="flabel">
+      <span>Period</span>
+      <select class="period-select" id="period-select"><option value="all">All time</option></select>
+      <span class="filter-note" id="period-note"></span>
+    </div>
+    <span class="filter-note">Section 4 (Breakeven &amp; ROI) always shows all-time progress, regardless of this filter</span>
+  </div>
+
   <div class="live-bar">
     <div class="status">
       <span class="live-dot loading" id="live-dot"></span>
@@ -297,17 +362,17 @@
   <section>
     <div class="grid kpi-grid">
       <div class="card stat">
-        <div class="label">Total revenue (YTD)</div>
+        <div class="label">Total revenue</div>
         <div class="value tnum" id="kpi-revenue">&mdash;</div>
         <div class="delta up" id="kpi-revenue-sub">&nbsp;</div>
       </div>
       <div class="card stat">
-        <div class="label">Total expenses (YTD)</div>
+        <div class="label">Total expenses</div>
         <div class="value tnum" id="kpi-expense">&mdash;</div>
         <div class="delta flat" id="kpi-expense-sub">&nbsp;</div>
       </div>
       <div class="card stat">
-        <div class="label">Net profit (YTD)</div>
+        <div class="label">Net profit</div>
         <div class="value tnum" id="kpi-net" style="color:var(--good)">&mdash;</div>
         <div class="delta up" id="kpi-net-sub">&nbsp;</div>
       </div>
@@ -345,10 +410,33 @@
     </div>
   </section>
 
+  <!-- P&L STATEMENT -->
+  <section id="pnl-section">
+    <div class="section-head">
+      <h2><span class="badge-num">2</span>Profit &amp; Loss Statement</h2>
+      <span class="sub">Generated for the period selected above &middot; compares to the prior period</span>
+    </div>
+    <div class="card">
+      <div class="pnl-head">
+        <div>
+          <h3 style="margin-bottom:2px;">Income Statement</h3>
+          <div class="card-sub" style="margin-bottom:0;" id="pnl-period-label">&nbsp;</div>
+        </div>
+        <button class="print-btn" id="pnl-print-btn">🖨️ Print / Save as PDF</button>
+      </div>
+      <div class="tbl-wrap">
+        <table class="pnl" id="tbl-pnl">
+          <tr><th>Line item</th><th>This period</th><th>Prior period</th><th>Change</th></tr>
+        </table>
+      </div>
+      <p class="pnl-note" id="pnl-note">Vendor-debt repayment (Accounts Payable) is shown as an operating expense here, matching the sheet's own bookkeeping — but it is really a financing/debt-principal item, not a recurring operating cost. The adjusted line below backs it out.</p>
+    </div>
+  </section>
+
   <!-- SLOT ANALYSIS -->
   <section>
     <div class="section-head">
-      <h2><span class="badge-num">2</span>Slot &amp; Booking Analysis</h2>
+      <h2><span class="badge-num">3</span>Slot &amp; Booking Analysis</h2>
       <span class="sub" id="sub-bookings">&mdash;</span>
     </div>
     <div class="grid g3" style="margin-bottom:16px;">
@@ -406,8 +494,8 @@
   <!-- BREAKEVEN + ROI -->
   <section>
     <div class="section-head">
-      <h2><span class="badge-num">3</span>Path to Breakeven &amp; ROI</h2>
-      <span class="sub">Recovering the ৳37,00,000 partner investment</span>
+      <h2><span class="badge-num">4</span>Path to Breakeven &amp; ROI</h2>
+      <span class="sub">Recovering the ৳37,00,000 partner investment &middot; always all-time, not affected by the period filter above</span>
     </div>
     <div class="card" style="margin-bottom:16px;">
       <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:10px;">
@@ -467,7 +555,7 @@
   <!-- PARTNER DISTRIBUTION -->
   <section>
     <div class="section-head">
-      <h2><span class="badge-num">4</span>Monthly Profit Distribution</h2>
+      <h2><span class="badge-num">5</span>Monthly Profit Distribution</h2>
       <span class="sub">15% reserved as a fund, 85% distributed &mdash; five ways, Galib, Asif, Siam, Priom, Mahboob</span>
     </div>
     <div class="card" style="margin-bottom:16px;">
@@ -508,7 +596,7 @@
   <!-- AI INSIGHTS -->
   <section>
     <div class="section-head">
-      <h2><span class="badge-num">5</span>AI Budget Planning</h2>
+      <h2><span class="badge-num">6</span>AI Budget Planning</h2>
       <span class="sub">Where to point cash over the next 2&ndash;3 quarters</span>
     </div>
     <div class="grid insight-grid">
@@ -549,7 +637,7 @@
 
   <section>
     <div class="section-head">
-      <h2><span class="badge-num">6</span>Other AI Suggestions</h2>
+      <h2><span class="badge-num">7</span>Other AI Suggestions</h2>
       <span class="sub">Growth, pricing and risk observations from the booking data</span>
     </div>
     <div class="grid insight-grid">
@@ -981,12 +1069,11 @@
     return String(h).padStart(2,'0');
   }
 
-  function buildModel(salesTbl, expenseTbl){
+  function parseSalesTable(salesTbl){
     const H = salesTbl.header;
     const iDate = colIdx(H,"Date"), iSlot = colIdx(H,"Slot"), iDesc = colIdx(H,"Description"),
           iStatus = colIdx(H,"Booking Status"), iPaid = colIdx(H,"Paid Amount"), iClient = colIdx(H,"Client"),
-          iDisc = colIdx(H,"Discount"), iBookingPrice = colIdx(H,"Booking Price");
-
+          iDisc = colIdx(H,"Discount");
     const sales = [];
     salesTbl.body.forEach(r=>{
       const status = (r[iStatus]||"").trim();
@@ -998,8 +1085,10 @@
         paid:toNum(r[iPaid]), client:(r[iClient]||"Unknown").trim(), discount:toNum(r[iDisc])
       });
     });
-    if(!sales.length) throw new Error("no completed bookings parsed");
+    return sales;
+  }
 
+  function parseExpenseTable(expenseTbl){
     const EH = expenseTbl.header;
     const eDate = colIdx(EH,"Date"), eType = colIdx(EH,"Transaction Type"), eCat = colIdx(EH,"Category"), ePaid = colIdx(EH,"Amount Paid");
     const expenses = [];
@@ -1010,7 +1099,102 @@
       if(!d) return;
       expenses.push({date:d, cat:(r[eCat]||"").trim(), amount:toNum(r[ePaid])});
     });
+    return expenses;
+  }
 
+  /* ============================================================
+     PERIOD FILTERING
+     filter = {type:'all'} | {type:'year', year} | {type:'month', year, month(1-12)}
+  ============================================================ */
+  function periodLabel(filter){
+    if(!filter || filter.type==='all') return "All time";
+    if(filter.type==='year') return "Full year " + filter.year;
+    if(filter.type==='month') return MONTH_ABBR[filter.month-1] + " " + filter.year;
+    return "All time";
+  }
+  function inPeriod(date, filter){
+    if(!filter || filter.type==='all') return true;
+    if(filter.type==='year') return date.getFullYear()===filter.year;
+    if(filter.type==='month') return date.getFullYear()===filter.year && (date.getMonth()+1)===filter.month;
+    return true;
+  }
+  function filterByPeriod(sales, expenses, filter){
+    return {
+      sales: sales.filter(s=>inPeriod(s.date, filter)),
+      expenses: expenses.filter(e=>inPeriod(e.date, filter)),
+    };
+  }
+  function priorFilter(filter){
+    if(!filter || filter.type==='all') return null;
+    if(filter.type==='month'){
+      let y=filter.year, m=filter.month-1;
+      if(m<1){ m=12; y--; }
+      return {type:'month', year:y, month:m};
+    }
+    if(filter.type==='year') return {type:'year', year:filter.year-1};
+    return null;
+  }
+  // Build the <select> options from the full (unfiltered) history: "All time", then
+  // per year "Full year YYYY" and each month present, newest first.
+  function buildPeriodOptions(allSales, allExpenses){
+    const keySet = new Set();
+    allSales.forEach(s=>keySet.add(monthKey(s.date)));
+    allExpenses.forEach(e=>keySet.add(monthKey(e.date)));
+    const monthKeys = Array.from(keySet).sort();
+    if(!monthKeys.length) return {html:'<option value="all">All time</option>', allLabel:"All time"};
+    const first = monthKeys[0], last = monthKeys[monthKeys.length-1];
+    const monthDate = k => new Date(+k.split('-')[0], +k.split('-')[1]-1, 1);
+    const allLabel = "All time (" + monthLabel(monthDate(first)) + " – " + monthLabel(monthDate(last)) + ")";
+    const byYear = {};
+    monthKeys.forEach(k=>{ const y=+k.split('-')[0]; (byYear[y]=byYear[y]||[]).push(k); });
+    const years = Object.keys(byYear).map(Number).sort((a,b)=>b-a);
+    let html = `<option value="all">${allLabel}</option>`;
+    years.forEach(y=>{
+      html += `<optgroup label="${y}">`;
+      html += `<option value="year:${y}">Full year ${y}</option>`;
+      byYear[y].slice().sort().reverse().forEach(k=>{
+        const mo = +k.split('-')[1];
+        html += `<option value="month:${y}:${mo}">${MONTH_ABBR[mo-1]} ${y}</option>`;
+      });
+      html += `</optgroup>`;
+    });
+    return {html, allLabel};
+  }
+  function parseFilterValue(v){
+    if(!v || v==="all") return {type:'all'};
+    const parts = v.split(':');
+    if(parts[0]==='year') return {type:'year', year:+parts[1]};
+    if(parts[0]==='month') return {type:'month', year:+parts[1], month:+parts[2]};
+    return {type:'all'};
+  }
+
+  /* ============================================================
+     PROFIT & LOSS STATEMENT (period-scoped)
+  ============================================================ */
+  function computePnL(sales, expenses){
+    const grossRevenue = sales.reduce((a,s)=>a+s.paid,0) + sales.reduce((a,s)=>a+s.discount,0);
+    const discount = sales.reduce((a,s)=>a+s.discount,0);
+    const netRevenue = sales.reduce((a,s)=>a+s.paid,0);
+    const catTotals = {};
+    let apAmount = 0;
+    expenses.forEach(e=>{
+      const grp = categorize(e.cat);
+      catTotals[grp.label] = (catTotals[grp.label]||0) + e.amount;
+      if(e.cat.trim()==="Accounts Payable") apAmount += e.amount;
+    });
+    const cats = Object.entries(catTotals)
+      .map(([label,value])=>{ const grp = CAT_GROUPS.find(g=>g.label===label) || {color:'--s4'}; return {label, value, colorVar:grp.color}; })
+      .sort((a,b)=>b.value-a.value);
+    const totalOpex = cats.reduce((a,c)=>a+c.value,0);
+    const netProfit = netRevenue - totalOpex;
+    const adjNetProfit = netProfit + apAmount; // excl. vendor-debt repayment (financing item)
+    return {grossRevenue, discount, netRevenue, cats, totalOpex, netProfit, apAmount, adjNetProfit, bookingCount:sales.length};
+  }
+
+  /* ============================================================
+     AGGREGATE MODEL FROM PRE-PARSED, PRE-FILTERED ROWS
+  ============================================================ */
+  function computeModel(sales, expenses, refDate){
     // month keys present, sorted chronologically
     const keySet = new Set();
     sales.forEach(s=>keySet.add(monthKey(s.date)));
@@ -1090,9 +1274,10 @@
     const repeatRate = uniqueClients ? repeatClients/uniqueClients : 0;
 
     // utilization
-    const dates = sales.map(s=>s.date.getTime());
-    const minD = new Date(Math.min(...dates)), maxD = new Date(Math.max(...dates));
-    const daySpan = Math.max(1, Math.round((maxD-minD)/86400000));
+    const allDates = sales.map(s=>s.date.getTime()).concat(expenses.map(e=>e.date.getTime()));
+    const minD = allDates.length ? new Date(Math.min(...allDates)) : (refDate||new Date());
+    const maxD = allDates.length ? new Date(Math.max(...allDates)) : (refDate||new Date());
+    const daySpan = Math.max(1, Math.round((maxD-minD)/86400000) + 1);
     const possibleSlots = SLOTS_PER_DAY * daySpan;
     const utilization = sales.length / possibleSlots;
 
@@ -1161,16 +1346,17 @@
   ============================================================ */
   function pct(n){ return (n*100).toFixed(1)+"%"; }
 
-  function render(model, opts){
+  function render(model, globalModel, opts){
     opts = opts || {};
     const m = model;
+    const g = globalModel || model;
 
-    document.getElementById("hero-period").textContent = m.months.length ? (m.months[0] + " – " + m.months[m.months.length-1]) : "—";
-    document.getElementById("sub-period-1").textContent = "Monthly · amounts in BDT";
-    document.getElementById("sub-period-2").textContent = "Expense mix, " + (m.months.length ? (m.months[0] + "–" + m.months[m.months.length-1]) : "");
-    document.getElementById("sub-bookings").textContent = m.bookingCount + " completed bookings across " + m.uniqueClients + " unique clients";
+    document.getElementById("hero-period").textContent = g.months.length ? (g.months[0] + " – " + g.months[g.months.length-1]) : "—";
+    document.getElementById("sub-period-1").textContent = (opts.periodLabel||"Monthly") + " · amounts in BDT";
+    document.getElementById("sub-period-2").textContent = "Expense mix, " + (opts.periodLabel || (m.months.length ? (m.months[0] + "–" + m.months[m.months.length-1]) : ""));
+    document.getElementById("sub-bookings").textContent = m.bookingCount + " completed bookings across " + m.uniqueClients + " unique clients" + (opts.periodLabel ? " · " + opts.periodLabel : "");
     document.getElementById("sub-topclients").textContent = "Top " + m.topClients.length + " accounts";
-    document.getElementById("foot-source").textContent = "Source: Legends Dohar Sales and Expenses workbook · data through " + m.asOf.toDateString();
+    document.getElementById("foot-source").textContent = "Source: Legends Dohar Sales and Expenses workbook · data through " + g.asOf.toDateString();
 
     // KPIs
     document.getElementById("kpi-revenue").textContent = fmt0(m.totalRevenue);
@@ -1181,8 +1367,8 @@
     document.getElementById("kpi-net").textContent = fmt0(m.totalNet);
     document.getElementById("kpi-net").style.color = m.totalNet>=0 ? "var(--good)" : "var(--critical)";
     document.getElementById("kpi-net-sub").textContent = (m.totalNet>=0?"▲ ":"▼ ") + (m.totalRevenue? pct(m.totalNet/m.totalRevenue):"0%") + " net margin";
-    document.getElementById("kpi-recovered").textContent = pct(m.recovered/INVESTMENT);
-    document.getElementById("kpi-recovered-sub").textContent = fmt0(m.recovered) + " of " + fmt0(INVESTMENT);
+    document.getElementById("kpi-recovered").textContent = pct(g.recovered/INVESTMENT);
+    document.getElementById("kpi-recovered-sub").textContent = fmt0(g.recovered) + " of " + fmt0(INVESTMENT) + " (all-time)";
 
     monthlyChart(document.getElementById("chart-monthly"), m.months, m.income, m.expense, m.net);
 
@@ -1199,7 +1385,7 @@
     });
 
     document.getElementById("kpi-util").textContent = pct(m.utilization);
-    document.getElementById("kpi-util-sub").textContent = m.bookingCount + " of ~" + Math.round(m.bookingCount/m.utilization) + " possible hourly slots (" + SLOTS_PER_DAY + " slots/day × " + m.daySpan + " days)";
+    document.getElementById("kpi-util-sub").textContent = m.bookingCount + " of ~" + (SLOTS_PER_DAY*m.daySpan) + " possible hourly slots (" + SLOTS_PER_DAY + " slots/day × " + m.daySpan + " days)";
     document.getElementById("kpi-eveshare").textContent = pct(m.eveningShare);
     document.getElementById("kpi-eveshare-sub").textContent = "6–10pm window: " + m.dpBookings[3] + " bookings, " + fmt0(m.dpRevenue[3]) + " revenue";
     document.getElementById("kpi-repeat").textContent = pct(m.repeatRate);
@@ -1227,24 +1413,24 @@
     m.topClients.forEach(c=>{ ch += `<tr><td class="strong">${c.name}</td><td class="num tnum">${c.count}</td><td class="num tnum strong">${fmt0(c.revenue)}</td></tr>`; });
     tblClients.innerHTML = ch;
 
-    // breakeven
-    document.getElementById("breakeven-asof").textContent = "as of " + m.asOf.toDateString();
-    document.getElementById("breakeven-headline").innerHTML = fmt0(m.recovered) + ` <span style="color:var(--text-muted); font-weight:600; font-size:14px;">/ ${fmt0(INVESTMENT)}</span>`;
-    document.getElementById("breakeven-fill").style.width = Math.min(100, Math.max(0, (m.recovered/INVESTMENT*100))) + "%";
-    document.getElementById("breakeven-pct").textContent = pct(m.recovered/INVESTMENT) + " recovered";
+    // breakeven — always computed from the FULL, unfiltered history (all-time), independent of the period filter
+    document.getElementById("breakeven-asof").textContent = "as of " + g.asOf.toDateString();
+    document.getElementById("breakeven-headline").innerHTML = fmt0(g.recovered) + ` <span style="color:var(--text-muted); font-weight:600; font-size:14px;">/ ${fmt0(INVESTMENT)}</span>`;
+    document.getElementById("breakeven-fill").style.width = Math.min(100, Math.max(0, (g.recovered/INVESTMENT*100))) + "%";
+    document.getElementById("breakeven-pct").textContent = pct(g.recovered/INVESTMENT) + " recovered";
 
-    const consVals = m.consProj.map(p=>p.value), consLabels = m.consProj.map(p=>p.label);
-    const optVals = m.optProj.map(p=>p.value), optLabels = m.optProj.map(p=>p.label);
-    breakevenChart(document.getElementById("chart-breakeven"), m.months, m.cumulative, consLabels, consVals, optLabels, optVals, INVESTMENT);
+    const consVals = g.consProj.map(p=>p.value), consLabels = g.consProj.map(p=>p.label);
+    const optVals = g.optProj.map(p=>p.value), optLabels = g.optProj.map(p=>p.label);
+    breakevenChart(document.getElementById("chart-breakeven"), g.months, g.cumulative, consLabels, consVals, optLabels, optVals, INVESTMENT);
 
-    document.getElementById("cons-rate").textContent = fmt0(m.consRate) + " / mo";
-    document.getElementById("cons-eta").innerHTML = (m.consProj.length ? m.consProj[m.consProj.length-1].label : "n/a") + `<br><span style="font-weight:400;color:var(--text-muted);font-size:12px;">~${m.consProj.length} months out</span>`;
-    document.getElementById("opt-rate").textContent = fmt0(m.optRate) + " / mo";
-    document.getElementById("opt-eta").innerHTML = (m.optProj.length ? m.optProj[m.optProj.length-1].label : "n/a") + `<br><span style="font-weight:400;color:var(--text-muted);font-size:12px;">~${m.optProj.length} months out</span>`;
+    document.getElementById("cons-rate").textContent = fmt0(g.consRate) + " / mo";
+    document.getElementById("cons-eta").innerHTML = (g.consProj.length ? g.consProj[g.consProj.length-1].label : "n/a") + `<br><span style="font-weight:400;color:var(--text-muted);font-size:12px;">~${g.consProj.length} months out</span>`;
+    document.getElementById("opt-rate").textContent = fmt0(g.optRate) + " / mo";
+    document.getElementById("opt-eta").innerHTML = (g.optProj.length ? g.optProj[g.optProj.length-1].label : "n/a") + `<br><span style="font-weight:400;color:var(--text-muted);font-size:12px;">~${g.optProj.length} months out</span>`;
 
-    const roiAvg = m.avgMonthly*12/INVESTMENT;
-    const roiRecent = m.consRate*12/INVESTMENT;
-    const roiPost = m.optRate*12/INVESTMENT;
+    const roiAvg = g.avgMonthly*12/INVESTMENT;
+    const roiRecent = g.consRate*12/INVESTMENT;
+    const roiPost = g.optRate*12/INVESTMENT;
     document.getElementById("roi-avg").textContent = pct(roiAvg);
     document.getElementById("roi-recent").textContent = pct(roiRecent);
     document.getElementById("roi-post").textContent = pct(roiPost);
@@ -1261,7 +1447,7 @@
           + PARTNERS.map(()=>`<td class="num tnum ${share<0?'neg':''}">${fmt0(share)}</td>`).join("")
           + `</tr>`;
     });
-    ph += `<tr><td class="strong">YTD Total</td>`
+    ph += `<tr><td class="strong">${opts.periodLabel && m.months.length>1 ? "Period Total" : "Total"}</td>`
         + `<td class="num tnum strong">${fmt0(m.totalNet)}</td>`
         + `<td class="num tnum strong">${fmt0(m.totalReserve)}</td>`
         + `<td class="num tnum strong pos">${fmt0(m.totalDistrib)}</td>`
@@ -1273,87 +1459,89 @@
     document.getElementById("stat-perpartner-ytd").textContent = fmt0(m.totalDistrib/5);
 
     // dynamic insight copy
+    const periodPhrase = opts.periodLabel && opts.periodLabel!=="All time" ? ("in " + opts.periodLabel) : "YTD";
     const topClient = m.topClients[0];
     if(topClient){
       document.getElementById("insight-topclient").textContent =
-        `"${topClient.name}" alone accounts for ${fmt0(topClient.revenue)} (${topClient.count} bookings, ${pct(topClient.revenue/m.totalRevenue)} of YTD revenue). Worth understanding whether this is a reseller/team organizer; a preferential block-booking rate could lock in the relationship, but losing this single account would be a visible dent in monthly income.`;
+        `"${topClient.name}" alone accounts for ${fmt0(topClient.revenue)} (${topClient.count} bookings, ${m.totalRevenue?pct(topClient.revenue/m.totalRevenue):'0%'} of revenue ${periodPhrase}). Worth understanding whether this is a reseller/team organizer; a preferential block-booking rate could lock in the relationship, but losing this single account would be a visible dent in monthly income.`;
+    } else {
+      document.getElementById("insight-topclient").textContent = "No completed bookings in this period to analyze.";
     }
     document.getElementById("insight-evening").textContent =
       `The 6–10pm window delivers ${pct(m.eveningShare)} of revenue from just 4 of ~21 daily hours. That window is very likely at or near physical capacity most weekdays. Growth from here comes less from "more marketing" for peak hours and more from shifting demand into adjacent hours, or adding a second turf/court if land allows.`;
     document.getElementById("insight-offpeak").textContent =
       `Morning and midday hours produced just ${m.dpBookings[0]+m.dpBookings[1]} bookings out of ${m.bookingCount} total. Consider a steep off-peak discount for school/corporate five-a-side leagues, coaching camps, or women-only sessions to convert dead hours into incremental revenue with near-zero marginal cost.`;
     document.getElementById("insight-discount").textContent =
-      `${fmt0(m.totalDiscount)} was discounted YTD against ${fmt0(m.totalGross)} in gross bookings (${m.totalGross? pct(m.totalDiscount/m.totalGross):'0%'}). Peak-hour slots are already demand-constrained, so discounting there mostly gives away margin; consider reserving discounts for off-peak fill-rate campaigns instead.`;
+      `${fmt0(m.totalDiscount)} was discounted ${periodPhrase} against ${fmt0(m.totalGross)} in gross bookings (${m.totalGross? pct(m.totalDiscount/m.totalGross):'0%'}). Peak-hour slots are already demand-constrained, so discounting there mostly gives away margin; consider reserving discounts for off-peak fill-rate campaigns instead.`;
 
     if(!opts.silent){
-      document.getElementById("scenario-sub").textContent = `Both use the ${fmt0(m.recovered)} already recovered as the base`;
+      document.getElementById("scenario-sub").textContent = `Both use the ${fmt0(g.recovered)} already recovered as the base`;
     }
+  }
+
+  /* ============================================================
+     RENDER P&L STATEMENT
+  ============================================================ */
+  function deltaHtml(cur, prior){
+    if(prior==null) return `<span class="pnl-delta flat">n/a</span>`;
+    if(prior===0){
+      if(cur===0) return `<span class="pnl-delta flat">&mdash;</span>`;
+      return `<span class="pnl-delta ${cur>0?'up':'down'}">new</span>`;
+    }
+    const d = (cur-prior)/Math.abs(prior);
+    const arrow = d>0.001 ? "▲" : d<-0.001 ? "▼" : "•";
+    const cls = d>0.001 ? "up" : d<-0.001 ? "down" : "flat";
+    return `<span class="pnl-delta ${cls}">${arrow} ${(Math.abs(d)*100).toFixed(1)}%</span>`;
+  }
+
+  function renderPnL(cur, prior, curLabel, priorLabel){
+    document.getElementById("pnl-period-label").textContent =
+      curLabel + (priorLabel ? " · compared to " + priorLabel : " · no prior period to compare");
+
+    const rows = [];
+    rows.push({t:'grp', label:'Revenue'});
+    rows.push({t:'item', label:'Gross booking revenue', cur:cur.grossRevenue, prior:prior&&prior.grossRevenue});
+    rows.push({t:'item', label:'Less: discounts given', cur:-cur.discount, prior:prior&&(-prior.discount)});
+    rows.push({t:'sub', label:'Net Revenue', cur:cur.netRevenue, prior:prior&&prior.netRevenue});
+
+    rows.push({t:'grp', label:'Operating Expenses'});
+    if(cur.cats.length){
+      cur.cats.forEach(c=>{
+        const priorVal = prior ? (prior.cats.find(pc=>pc.label===c.label)||{value:0}).value : null;
+        rows.push({t:'item', label:c.label, cur:c.value, prior:priorVal});
+      });
+    } else {
+      rows.push({t:'item', label:'No expenses recorded this period', cur:0, prior:prior?0:null});
+    }
+    rows.push({t:'sub', label:'Total Operating Expenses', cur:cur.totalOpex, prior:prior&&prior.totalOpex});
+
+    rows.push({t:'total', label:'Net Profit', cur:cur.netProfit, prior:prior&&prior.netProfit});
+    rows.push({t:'item', label:'Net margin', pctRow:true, cur: cur.netRevenue? cur.netProfit/cur.netRevenue : 0, prior: prior && prior.netRevenue ? prior.netProfit/prior.netRevenue : null});
+    rows.push({t:'item', label:'Of which: vendor-debt repayment (AP)', cur:-cur.apAmount, prior:prior&&(-prior.apAmount)});
+    rows.push({t:'sub', label:'Adjusted operating profit (excl. vendor debt)', cur:cur.adjNetProfit, prior:prior&&prior.adjNetProfit});
+
+    let html = "<tr><th>Line item</th><th>This period</th><th>Prior period</th><th>Change</th></tr>";
+    rows.forEach(r=>{
+      if(r.t==='grp'){ html += `<tr class="grp"><td colspan="4">${r.label}</td></tr>`; return; }
+      const curTxt = r.pctRow ? pct(r.cur) : fmt0(r.cur);
+      const priorTxt = r.prior==null ? "&mdash;" : (r.pctRow ? pct(r.prior) : fmt0(r.prior));
+      const cls = r.t==='item' ? 'item' : r.t==='sub' ? 'sub' : r.t==='total' ? 'total ' + (r.cur>=0?'pos':'neg') : '';
+      html += `<tr class="${cls}"><td>${r.label}</td><td class="tnum">${curTxt}</td><td class="tnum">${priorTxt}</td><td>${r.pctRow ? '' : deltaHtml(r.cur, r.prior)}</td></tr>`;
+    });
+    document.getElementById("tbl-pnl").innerHTML = html;
   }
 
   /* ============================================================
      STATIC FALLBACK SNAPSHOT (last known good, 26 Aug 2026)
   ============================================================ */
-  function fallbackModel(){
-    const months = ["Jan-26","Feb-26","Mar-26","Apr-26","May-26","Jun-26","Jul-26","Aug-26"];
-    const income = [38500,110200,103060,165350,277050,201500,339940,278170];
-    const expense = [28455,90715,67770,67880,291975,223735,71065,93780];
-    const apMonthly = [5000,57000,28500,6500,205000,80000,0,50000];
-    const net = income.map((v,i)=>v-expense[i]);
-    const cumulative = []; net.reduce((a,n)=>{const s=a+n;cumulative.push(s);return s;},0);
-    const reserve = net.map(n=>n>0?n*RESERVE_RATE:0);
-    const distributable = net.map((n,i)=>n-reserve[i]);
-    const bandDef = [
-      {label:"Morning", hours:[]},{label:"Midday", hours:[]},{label:"Late aft.", hours:[]},
-      {label:"Evening peak", hours:[]},{label:"Late night", hours:[]},
-    ];
-    const hmMatrix = [
-      [0,0,0,0,1,0,0,0,0,0,1,2,13,22,21,18,8,9,0,0,0],
-      [0,0,1,0,0,0,0,0,0,0,1,3,9,16,16,23,9,6,1,0,0],
-      [0,0,0,0,0,0,0,0,0,0,2,5,9,14,16,21,10,6,1,0,0],
-      [0,0,0,0,1,0,0,0,0,2,3,4,9,18,17,15,11,8,4,1,0],
-      [1,1,1,2,1,1,0,0,0,2,6,11,18,21,23,23,12,10,2,0,0],
-      [0,0,0,0,1,1,1,0,0,1,5,3,12,19,21,22,16,5,2,0,0],
-      [0,0,0,0,0,0,0,1,1,1,1,4,12,18,24,22,7,6,0,0,0],
-    ];
-    const topClients = [
-      {name:"Shobuj",count:54,revenue:114230},{name:"Vibe with Mahin",count:16,revenue:30700},
-      {name:"Noman",count:13,revenue:27650},{name:"Darul Nayeem",count:13,revenue:27200},
-      {name:"Udoy/Sabbir",count:13,revenue:27200},{name:"Tusher",count:13,revenue:26600},
-      {name:"Rifat",count:12,revenue:26200},{name:"Samir Bepari",count:10,revenue:21200},
-      {name:"Tauhid",count:12,revenue:18300},{name:"Imran",count:8,revenue:17750},
-    ];
-    const totalRevenue = income.reduce((a,b)=>a+b,0), totalExpense = expense.reduce((a,b)=>a+b,0);
-    const consRate = 143677, optRate = 187010, recovered = cumulative[cumulative.length-1];
-    function projectMonths(rate, startCum, cap){
-      const out=[]; let c=startCum, y=2026,m=8;
-      for(let i=0;i<cap;i++){ m++; if(m>12){m=1;y++;} c+=rate; out.push({label:MONTH_ABBR[m-1]+"-"+String(y).slice(2), value:c}); if(c>=INVESTMENT) break; }
-      return out;
-    }
-    return {
-      monthKeys: months, months, income, expense, net, apMonthly,
-      totalRevenue, totalExpense, totalNet: totalRevenue-totalExpense,
-      expenseCats: [
-        {label:"Vendor debt repayment (AP)", value:432000, colorVar:'--s8'},
-        {label:"Staff salaries", value:157700, colorVar:'--s1'},
-        {label:"Other operating costs", value:98240, colorVar:'--s4'},
-        {label:"Maintenance & repairs", value:97610, colorVar:'--s2'},
-        {label:"Utilities (power/net/phone)", value:44245, colorVar:'--s3'},
-        {label:"Fuel & generator", value:37500, colorVar:'--s7'},
-        {label:"Rent", value:35000, colorVar:'--s6'},
-        {label:"Accessories & equipment", value:33080, colorVar:'--s5'},
-      ],
-      bandDef, dpBookings:[12,9,51,492,134], dpRevenue:[19800,12700,88150,1099325,293795], eveningShare:0.726,
-      wdRevenue:[209550,184600,179830,208000,287450,234480,209860], hmMatrix,
-      peakRev:1429420, offRev:84350,
-      topClients, uniqueClients:313, repeatRate:0.409,
-      utilization:0.152, daySpan:219, bookingCount:698,
-      totalDiscount:200780, totalGross:1714550,
-      reserve, distributable, totalReserve: reserve.reduce((a,b)=>a+b,0), totalDistrib: distributable.reduce((a,b)=>a+b,0),
-      cumulative, recovered,
-      consRate, optRate, consProj: projectMonths(consRate, recovered, 60), optProj: projectMonths(optRate, recovered, 60),
-      avgMonthly: (totalRevenue-totalExpense)/8,
-      asOf: new Date(2026,7,26),
-    };
+  const FALLBACK_SALES_RAW=[["2026-01-16","20","Peak Hour Slot",2000,"Arman-01337932728",0],["2026-01-19","21","Peak Hour Slot",1500,"Arman-01337932728",0],["2026-01-19","20","Peak Hour Slot",2000,"Akib-01960103515",0],["2026-01-22","21","Peak Hour Slot",1800,"Emon-01878683150",200],["2026-01-24","18","Peak Hour Slot",1800,"Tusher-01309188322",200],["2026-01-24","20","Peak Hour Slot",1800,"Emon Sharif-01878683150",200],["2026-01-25","19","Peak Hour Slot",2000,"Labib-01970580464",0],["2026-01-23","20","Peak Hour Slot",2000,"Vibe with Mahin-01794895241",0],["2026-01-23","19","Peak Hour Slot",1800,"Showrab-01627246270",200],["2026-01-26","21","Peak Hour Slot",2000,"Tuhin Mahmud-01867023591",0],["2026-01-26","22","Peak Hour Slot",2000,"Jihad-01804231100",0],["2026-01-27","19","Peak Hour Slot",2000,"Jihad-01804231100",0],["2026-01-27","21","Peak Hour Slot",2000,"DBBL Banker-0",0],["2026-01-29","10","Off Peak Hour Slot",1900,"Aktar's Son-01731200990",0],["2026-01-29","15","Off Peak Hour Slot",1500,"Azmain-01858556866",0],["2026-01-29","20","Peak Hour Slot",1800,"Emon Sharif-01878683150",200],["2026-01-30","20","Peak Hour Slot",1800,"Sohan-01343315099",200],["2026-01-31","10","Off Peak Hour Slot",1600,"Journalist Sujon-01732478939",0],["2026-01-31","11","Off Peak Hour Slot",1600,"Journalist Sujon-01732478939",0],["2026-01-31","12","Off Peak Hour Slot",1600,"Journalist Sujon-01732478939",0],["2026-01-31","22","Peak Hour Slot",2000,"Shahriar-01703815588",0],["2026-02-01","22","Peak Hour Slot",2000,"Tusher-01309188322",500],["2026-02-02","19","Peak Hour Slot",2200,"Rohim-01846695173",300],["2026-02-02","21","Peak Hour Slot",2200,"Afsar/Bayejid/Jubayer/Shukkur-01788484898",300],["2026-02-02","23","Peak Hour Slot",2000,"Arman-01337932728",500],["2026-02-04","19","Peak Hour Slot",2000,"Kawser-01733084788",500],["2026-02-04","21","Peak Hour Slot",2200,"Rohan-01797532852",300],["2026-02-04","22","Peak Hour Slot",2200,"Udoy/Sabbir-01798100071",300],["2026-02-05","19","Peak Hour Slot",2000,"Arman-01337932728",500],["2026-02-05","21","Peak Hour Slot",2200,"Sabbir Hossian-01798100071",300],["2026-02-05","22","Peak Hour Slot",2200,"Sobuj-01816833867",300],["2026-02-06","18","Peak Hour Slot",2200,"Asif Dewan-01866740380",300],["2026-02-06","19","Peak Hour Slot",2200,"Rohim-01846695173",300],["2026-02-06","09","Off Peak Hour Slot",1500,"Shahadat-01333824893",500],["2026-02-06","21","Peak Hour Slot",2000,"Kawser-01733084788",500],["2026-02-08","20","Peak Hour Slot",3300,"Rishat-01893838305",400],["2026-02-08","22","Peak Hour Slot",2000,"Naim-01816833648",500],["2026-02-08","23","Peak Hour Slot",2000,"Amir-01322650285",500],["2026-02-09","20","Peak Hour Slot",2000,"Vibe with Mahin-01794895241",500],["2026-02-09","19","Peak Hour Slot",1800,"Arman-01337932728",700],["2026-02-09","21","Peak Hour Slot",2000,"Mozakir-01797795511",500],["2026-02-10","19","Peak Hour Slot",2000,"Saifull Islam-01787121738",500],["2026-02-10","20","Peak Hour Slot",2000,"Saifull Islam-01787121738",500],["2026-02-10","21","Peak Hour Slot",2200,"Naim-01816833648",300],["2026-02-10","22","Peak Hour Slot",2200,"Parvej-01705341947",300],["2026-02-10","23","Peak Hour Slot",2000,"Vibe with Mahin-01794895241",500],["2026-02-13","18","Peak Hour Slot",2200,"Topu-01835892849",300],["2026-02-13","19","Peak Hour Slot",2200,"Tamim-01337096389",300],["2026-02-13","20","Peak Hour Slot",2000,"Vibe with Mahin-01794895241",500],["2026-02-13","21","Peak Hour Slot",2000,"Udoy/Sabbir-01798100071",500],["2026-02-13","22","Peak Hour Slot",2000,"Shohidul Molla-0",500],["2026-02-13","23","Peak Hour Slot",2000,"Shahriar -01848516130",500],["2026-02-14","19","Peak Hour Slot",2200,"Limon-01838809591",300],["2026-02-14","20","Peak Hour Slot",2200,"Emon -01325682823",300],["2026-02-15","20","Peak Hour Slot",2000,"Siam-01942328990",500],["2026-02-15","21","Peak Hour Slot",2200,"Parvej-01705341947",300],["2026-02-15","22","Peak Hour Slot",2000,"Emon -01325682823",500],["2026-02-16","20","Peak Hour Slot",2000,"Emon -01325682823",500],["2026-02-16","18","Peak Hour Slot",2000,"Samir Bepari-01745809559",500],["2026-02-16","19","Peak Hour Slot",2000,"Rajib Molla-0",500],["2026-02-16","21","Peak Hour Slot",2200,"Jubayer-01633004312",300],["2026-02-16","22","Peak Hour Slot",2000,"Udoy/Sabbir-01798100071",500],["2026-02-17","20","Peak Hour Slot",2200,"Udoy/Sabbir-01798100071",300],["2026-02-17","21","Peak Hour Slot",2200,"ibrahim -01806017130",300],["2026-02-17","22","Peak Hour Slot",2000,"Vibe with Mahin-01794895241",500],["2026-02-18","22","Peak Hour Slot",2000,"Vibe with Mahin-01794895241",500],["2026-02-20","22","Peak Hour Slot",2000,"Udoy/Sabbir-01798100071",500],["2026-02-21","20","Peak Hour Slot",2200,"Rahim-01859495140",300],["2026-02-21","21","Peak Hour Slot",2200,"Jahid Shorif (***)-01301318074",300],["2026-02-24","21","Peak Hour Slot",2200,"Udoy/Sabbir-01798100071",300],["2026-02-27","21","Peak Hour Slot",3000,"Rashan-01838809591",500],["2026-02-28","21","Peak Hour Slot",2200,"Shanto-01814139458",300],["2026-02-28","22","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-03-01","20","Peak Hour Slot",2000,"Vibe with Mahin-01794895241",500],["2026-03-02","10","Peak Hour Slot",2000,"Emon Sharif-01878683150",500],["2026-03-03","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-03-06","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-03-07","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-03-08","21","Peak Hour Slot",2000,"Vibe with Mahin-01794895241",300],["2026-03-09","21","Peak Hour Slot",2000,"Kawser-01733084788",500],["2026-03-10","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-03-11","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-03-12","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-03-13","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-03-14","21","Peak Hour Slot",2180,"Shobuj-01816833867",320],["2026-03-15","20","Peak Hour Slot",2000,"Vibe with Mahin-01794895241",500],["2026-03-15","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-03-17","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-03-17","22","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-03-18","21","Peak Hour Slot",1000,"Vibe with Mahin-01794895241",1200],["2026-03-19","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-03-21","21","Peak Hour Slot",2200,"Siam-01351022807",300],["2026-03-22","19","Peak Hour Slot",2200,"Siam-01351022807",300],["2026-03-22","20","Peak Hour Slot",2200,"Hasnat Abdullah-01867966068",300],["2026-03-22","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-03-23","19","Peak Hour Slot",2000,"Tusher-01309188322",500],["2026-03-23","20","Peak Hour Slot",1900,"Tusher-01309188322",600],["2026-03-23","21","Peak Hour Slot",2500,"Shipon-01993855656",500],["2026-03-23","22","Peak Hour Slot",2000,"Parvej-01843877697",500],["2026-03-24","19","Peak Hour Slot",2200,"Shahadat-01333824893",300],["2026-03-24","20","Peak Hour Slot",2200,"Riad-01893870825",300],["2026-03-24","21","Peak Hour Slot",2000,"Emon Sharif-01878683150",500],["2026-03-25","18","Peak Hour Slot",2180,"Nahid-01337020777",320],["2026-03-25","20","Peak Hour Slot",2200,"Tusher-01309188322",300],["2026-03-25","21","Peak Hour Slot",2200,"Udoy/Sabbir-01798100071",300],["2026-03-25","22","Peak Hour Slot",2200,"Udoy/Sabbir-01798100071",300],["2026-03-26","19","Peak Hour Slot",3500,"Jubayer-01633004312",250],["2026-03-26","21","Peak Hour Slot",2200,"Ridoy-01985177809",300],["2026-03-27","18","Peak Hour Slot",2000,"Delowar-01918695556",500],["2026-03-27","19","Peak Hour Slot",2200,"Hasnat Abdullah-01867966068",300],["2026-03-27","20","Peak Hour Slot",2200,"Tamim-01859495140",300],["2026-03-27","21","Peak Hour Slot",2000,"Tamim-01894577037",500],["2026-03-28","19","Peak Hour Slot",2200,"Rasel-01309698863",300],["2026-03-28","21","Peak Hour Slot",2200,"Shahi-01823116999",300],["2026-03-28","22","Peak Hour Slot",2000,"Samir Bepari-01745809559",500],["2026-03-29","19","Peak Hour Slot",2100,"Shihab Sharif-01961664409",400],["2026-03-29","20","Peak Hour Slot",2100,"Shihab Sharif-01961664409",400],["2026-03-29","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-03-30","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-03-30","23","Peak Hour Slot",2200,"Ariful-01853737826",300],["2026-03-31","21","Peak Hour Slot",2000,"Rashed-01647641531",500],["2026-04-01","19","Peak Hour Slot",2000,"Delowar-01918695556",500],["2026-04-01","20","Peak Hour Slot",2000,"Parvej-01843877697",500],["2026-04-01","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-04-02","20","Peak Hour Slot",2200,"Tuhin-01610690771",300],["2026-04-03","18","Peak Hour Slot",2000,"Mahim-01954339154",500],["2026-04-03","19","Peak Hour Slot",2200,"Shihab Sharif-01961664409",300],["2026-04-03","20","Peak Hour Slot",2000,"Hasan-01776360451",500],["2026-04-03","21","Peak Hour Slot",2000,"Vibe with Mahin-01794895241",500],["2026-04-04","19","Peak Hour Slot",2200,"Shomrat-01734207375",300],["2026-04-04","20","Peak Hour Slot",2000,"Tusher-01309188322",500],["2026-04-04","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-04-05","20","Peak Hour Slot",2200,"Mahim-01954339154",300],["2026-04-05","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-04-06","21","Peak Hour Slot",2100,"Vibe with Mahin-01794895241",400],["2026-04-07","18","Peak Hour Slot",2000,"Shahriar -01848516130",500],["2026-04-07","20","Peak Hour Slot",1800,"Vibe with Mahin-01794895241",700],["2026-04-08","17","Peak Hour Slot",2000,"Zunayed-01739919902",500],["2026-04-08","20","Peak Hour Slot",1800,"Vibe with Mahin-01794895241",700],["2026-04-08","21","Peak Hour Slot",2200,"Rifat-01715953916",300],["2026-04-08","22","Peak Hour Slot",1800,"Darul Nayeem-01867439248",700],["2026-04-09","19","Peak Hour Slot",2200,"Mehedi Hasan-01843038230",300],["2026-04-09","20","Peak Hour Slot",2000,"Noman-01323657309",500],["2026-04-09","21","Peak Hour Slot",2200,"Shihab Sharif-01961664409",300],["2026-04-09","22","Peak Hour Slot",2200,"Sejan-01880645810",300],["2026-04-10","10","Off Peak Hour Slot",1200,"Tauhid-01765700530",300],["2026-04-10","11","Off Peak Hour Slot",1100,"Tauhid-01765700530",400],["2026-04-10","17","Peak Hour Slot",750,"Shobuj-01816833867",1750],["2026-04-10","19","Peak Hour Slot",1900,"Pavel-01874497065",600],["2026-04-10","20","Peak Hour Slot",2000,"Hasan-01776360451",500],["2026-04-10","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-04-10","22","Peak Hour Slot",1800,"Udoy/Sabbir-01798100071",700],["2026-04-11","20","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-04-11","21","Peak Hour Slot",2200,"Ashraful-01850330625",300],["2026-04-11","22","Peak Hour Slot",2000,"Rifat-01715953916",500],["2026-04-12","19","Peak Hour Slot",2000,"Sajid-01856761289",500],["2026-04-12","20","Peak Hour Slot",2200,"Shomrat-01734207375",300],["2026-04-12","21","Peak Hour Slot",2000,"Vibe with Mahin-01794895241",500],["2026-04-13","18","Peak Hour Slot",2200,"Ahmed-01404363677",300],["2026-04-13","19","Peak Hour Slot",2200,"Mehedi Hasan-01843038230",300],["2026-04-13","20","Peak Hour Slot",2200,"Noman-01323657309",300],["2026-04-14","21","Peak Hour Slot",2200,"Rifat-01715953916",300],["2026-04-15","20","Peak Hour Slot",2200,"Tanvir-01989494632",300],["2026-04-15","21","Peak Hour Slot",1500,"Shobuj-01816833867",1000],["2026-04-16","19","Peak Hour Slot",2000,"Sohan-01343315099",500],["2026-04-16","20","Peak Hour Slot",2000,"Minhaj-01768275857",500],["2026-04-16","21","Peak Hour Slot",2000,"Udoy/Sabbir-01798100071",500],["2026-04-17","16","Off Peak Hour Slot",1350,"Akib/Kawsar/Foysal/Nafiz-01960103515",1150],["2026-04-17","17","Off Peak Hour Slot",1350,"Akib/Kawsar/Foysal/Nafiz-01960103515",1150],["2026-04-17","20","Peak Hour Slot",2000,"Alif-01319927261",500],["2026-04-17","21","Peak Hour Slot",2000,"Akib/Kawsar/Foysal/Nafiz-01960103515",500],["2026-04-17","22","Peak Hour Slot",1800,"Shobuj-01816833867",700],["2026-04-18","19","Peak Hour Slot",2200,"Amir-01965819503",300],["2026-04-18","20","Peak Hour Slot",2000,"Noman-01323657309",500],["2026-04-18","21","Peak Hour Slot",2000,"Udoy/Sabbir-01798100071",500],["2026-04-19","20","Peak Hour Slot",2100,"Shobuj-01816833867",400],["2026-04-19","21","Peak Hour Slot",2000,"Parvej-01843877697",500],["2026-04-20","19","Peak Hour Slot",2200,"Imran-01920301500",300],["2026-04-20","20","Peak Hour Slot",2200,"Shohag-01718085087",300],["2026-04-20","22","Peak Hour Slot",2000,"Darul Nayeem-01867439248",500],["2026-04-21","21","Peak Hour Slot",2000,"Vibe with Mahin-01794895241",500],["2026-04-21","23","Peak Hour Slot",1000,"Shobuj-01816833867",1500],["2026-04-23","19","Peak Hour Slot",2200,"Sabbir-01998565475",300],["2026-04-23","20","Peak Hour Slot",2200,"Rifat-01715953916",300],["2026-04-24","16","Off Peak Hour Slot",1350,"Tauhid-01765700530",1150],["2026-04-24","17","Peak Hour Slot",1350,"Tauhid-01765700530",1150],["2026-04-24","19","Peak Hour Slot",2400,"Tuhin-01610690771",100],["2026-04-24","20","Peak Hour Slot",2200,"Akib/Kawsar/Foysal/Nafiz-01960103515",300],["2026-04-24","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-04-25","20","Peak Hour Slot",2200,"Rabbi-01834246176",300],["2026-04-25","21","Peak Hour Slot",1100,"Rabbi-01834246176",1400],["2026-04-25","22","Peak Hour Slot",2200,"Parvej-01705341947",300],["2026-04-26","19","Peak Hour Slot",2300,"Joy-01323564552",200],["2026-04-26","20","Peak Hour Slot",2000,"Alif-01319927261",500],["2026-04-26","21","Peak Hour Slot",1800,"Shobuj-01816833867",700],["2026-04-27","18","Peak Hour Slot",2200,"Imran-01920301500",300],["2026-04-27","19","Peak Hour Slot",2200,"Sohan-01343315099",300],["2026-04-27","20","Peak Hour Slot",2000,"Darul Nayeem-01867439248",500],["2026-04-29","20","Peak Hour Slot",2400,"Saiful-01875292968",100],["2026-04-29","21","Peak Hour Slot",1900,"Shobuj-01816833867",600],["2026-04-30","19","Peak Hour Slot",2200,"Imran-01920301500",300],["2026-04-30","20","Peak Hour Slot",2300,"Samir Bepari-01745809559",200],["2026-04-30","21","Peak Hour Slot",2300,"Siam-01793610550",200],["2026-04-30","22","Peak Hour Slot",2400,"Babu-01846814275",100],["2026-05-01","18","Peak Hour Slot",2200,"Noman-01323657309",300],["2026-05-01","19","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-05-01","20","Peak Hour Slot",2200,"Shahriar-01703815588",300],["2026-05-01","21","Peak Hour Slot",2400,"Al Amin-01880261944",100],["2026-05-02","18","Peak Hour Slot",2200,"Siam-01793610550",300],["2026-05-02","19","Peak Hour Slot",2000,"Shihab Sharif-01961664409",500],["2026-05-02","20","Peak Hour Slot",2200,"Asif-01734949518",300],["2026-05-02","21","Peak Hour Slot",2400,"Rifat-01715953916",100],["2026-05-02","22","Peak Hour Slot",2000,"Darul Nayeem-01867439248",500],["2026-05-03","17","Peak Hour Slot",2000,"Emon -01325682823",500],["2026-05-03","21","Peak Hour Slot",2200,"Jahid/Sohan-01925785762",300],["2026-05-03","22","Peak Hour Slot",2200,"Delowar-0149452660",300],["2026-05-04","19","Peak Hour Slot",2200,"Parvej-01843877697",300],["2026-05-04","20","Peak Hour Slot",2200,"Rafi-01614140669",300],["2026-05-04","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-05-04","22","Peak Hour Slot",2200,"Ridoy-01835087883",300],["2026-05-04","23","Peak Hour Slot",2000,"Mehedi-01707102704",500],["2026-05-05","17","Off Peak Hour Slot",1000,"Zakir-01680069363",1500],["2026-05-05","20","Peak Hour Slot",2000,"Pial-01856761569",500],["2026-05-05","21","Peak Hour Slot",2200,"Rajib-01860649554",300],["2026-05-05","22","Peak Hour Slot",2200,"Ariful-01853737826",300],["2026-05-06","19","Peak Hour Slot",2400,"Fahim-01300964442",100],["2026-05-06","21","Peak Hour Slot",2200,"Rifat-01715953916",300],["2026-05-07","18","Peak Hour Slot",2400,"Shopon-01880226229",100],["2026-05-07","19","Peak Hour Slot",2400,"Hashem-01633064799",100],["2026-05-07","20","Peak Hour Slot",2000,"Elias-01859058793",500],["2026-05-07","22","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-05-07","23","Peak Hour Slot",2400,"Ayon-01805641546",100],["2026-05-08","17","Peak Hour Slot",1500,"Sohan-01343315099",1000],["2026-05-08","18","Peak Hour Slot",2200,"Noman-01323657309",300],["2026-05-08","19","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-05-08","20","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-05-08","21","Peak Hour Slot",2400,"Aminul-01942774099",100],["2026-05-09","19","Peak Hour Slot",2400,"Ashraful-01850330629",100],["2026-05-09","20","Peak Hour Slot",2200,"Shurjo-01335380527",300],["2026-05-09","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-05-09","22","Peak Hour Slot",2200,"Ariful-01853737826",300],["2026-05-10","18","Peak Hour Slot",2400,"Fahad-01837371458",100],["2026-05-10","19","Peak Hour Slot",2400,"Akib/Kawsar/Foysal/Nafiz-01960103515",100],["2026-05-10","20","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-05-10","21","Peak Hour Slot",2200,"Shourov Das-01675685736",300],["2026-05-11","19","Peak Hour Slot",2200,"Imran-01920301500",300],["2026-05-11","20","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-05-12","18","Peak Hour Slot",2000,"Noman-01323657309",500],["2026-05-12","19","Peak Hour Slot",2400,"Tanvir-01989494632",100],["2026-05-12","20","Peak Hour Slot",2200,"Saim-01842359237",300],["2026-05-13","16","Peak Hour Slot",2000,"Nasir-01776164479",500],["2026-05-13","19","Peak Hour Slot",2200,"Arif-01763658913",300],["2026-05-13","20","Peak Hour Slot",1200,"Arif-01763658913",1300],["2026-05-13","21","Peak Hour Slot",3500,"Kajol-01824001296",250],["2026-05-14","15","Off Peak Hour Slot",1500,"Siam-01793790415",300],["2026-05-14","16","Off Peak Hour Slot",1500,"Siam-01793790415",300],["2026-05-14","17","Peak Hour Slot",2200,"Tanvir-01880674473",300],["2026-05-14","18","Peak Hour Slot",2200,"Tanvir-01880674473",300],["2026-05-14","19","Peak Hour Slot",2400,"Arafat-01603586320",100],["2026-05-15","18","Peak Hour Slot",2250,"Mridul-01310772985",250],["2026-05-15","19","Peak Hour Slot",2400,"Jihad-01885895988",100],["2026-05-15","20","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-05-15","21","Peak Hour Slot",2200,"Jishan-01339903570",300],["2026-05-15","22","Peak Hour Slot",2400,"Saiful-01875292968",100],["2026-05-15","00","Peak Hour Slot",2200,"Mehedi Hasan-01843038230",300],["2026-05-16","19","Peak Hour Slot",2400,"Redowan-01951766651",100],["2026-05-16","20","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-05-16","21","Peak Hour Slot",2400,"Alif-01818721608",100],["2026-05-16","00","Peak Hour Slot",2200,"Mehedi Hasan-01843038230",300],["2026-05-17","18","Peak Hour Slot",2300,"Jihad-01885895988",200],["2026-05-17","19","Peak Hour Slot",2200,"Rifat-01715953916",300],["2026-05-17","20","Peak Hour Slot",2200,"Shourov Das-01675685736",300],["2026-05-18","18","Peak Hour Slot",2200,"Topu-01337305062",300],["2026-05-18","19","Peak Hour Slot",2200,"Imran-01920301500",300],["2026-05-18","20","Peak Hour Slot",2400,"Rifat-01685452019",100],["2026-05-19","16","Off Peak Hour Slot",1500,"Tauhid-01765700530",300],["2026-05-19","17","Off Peak Hour Slot",1500,"Tauhid-01765700530",300],["2026-05-19","18","Peak Hour Slot",2100,"Topu-01835892849",400],["2026-05-19","19","Peak Hour Slot",2200,"Sadikul-01771379721",300],["2026-05-19","20","Peak Hour Slot",2400,"Redowan-01320608238",100],["2026-05-19","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-05-19","22","Peak Hour Slot",2200,"Udoy/Sabbir-01798100071",300],["2026-05-20","19","Peak Hour Slot",2200,"Samir Bepari-01745809559",300],["2026-05-20","20","Peak Hour Slot",2400,"Shipon-01993855656",100],["2026-05-20","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-05-20","22","Peak Hour Slot",2200,"Samir Bepari-01745809559",300],["2026-05-21","18","Peak Hour Slot",2400,"Shagor Bepari-01342938700",100],["2026-05-21","20","Peak Hour Slot",2200,"Noman-01323657309",300],["2026-05-21","22","Peak Hour Slot",2400,"Sizan-01880645810",100],["2026-05-22","17","Peak Hour Slot",2000,"Kamrul-01302314630",500],["2026-05-22","18","Peak Hour Slot",2400,"Mahfuzur Rahman-01877804840",100],["2026-05-22","20","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-05-22","21","Peak Hour Slot",2200,"Mozakir-01797795511",300],["2026-05-22","23","Peak Hour Slot",1500,"Jamirul-01339903570",300],["2026-05-23","18","Peak Hour Slot",2000,"Noman-01323657309",500],["2026-05-23","19","Peak Hour Slot",2100,"Kamrul-01302314630",400],["2026-05-23","20","Peak Hour Slot",2400,"Tamim/Jishan-01843166150",100],["2026-05-23","21","Peak Hour Slot",1200,"Tamim/Jishan-01843166150",50],["2026-05-23","22","Peak Hour Slot",2000,"Sohan-01343315099",500],["2026-05-24","14","Off Peak Hour Slot",1000,"Rifat-01920342669",800],["2026-05-24","15","Off Peak Hour Slot",1000,"Rifat-01920342669",800],["2026-05-24","16","Off Peak Hour Slot",1000,"Rifat-01920342669",800],["2026-05-24","17","Off Peak Hour Slot",1000,"Rifat-01920342669",800],["2026-05-24","19","Peak Hour Slot",2400,"Sajidul-01877901439",100],["2026-05-24","20","Peak Hour Slot",2000,"Mehedi-01707102704",500],["2026-05-24","21","Peak Hour Slot",2200,"Rifat-01715953916",300],["2026-05-24","23","Peak Hour Slot",2200,"Rifat-01805641546",300],["2026-05-25","18","Peak Hour Slot",2400,"Abir-01855578574",100],["2026-05-25","19","Peak Hour Slot",2000,"Arman-01337932728",500],["2026-05-25","20","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-05-26","19","Peak Hour Slot",2200,"Sakib-01608187116",300],["2026-05-26","21","Peak Hour Slot",2200,"Rifat-01715953916",300],["2026-05-26","22","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-05-27","21","Peak Hour Slot",2000,"Shihab Sharif-01961664409",500],["2026-05-28","19","Peak Hour Slot",2400,"Jihad-01885895988",100],["2026-05-28","20","Peak Hour Slot",2400,"Noyon-01832511628",100],["2026-05-29","18","Peak Hour Slot",2400,"Shanto-01818023487",100],["2026-05-29","19","Peak Hour Slot",2200,"Sadikul-01771379721",300],["2026-05-29","20","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-05-29","21","Peak Hour Slot",2200,"Ariful-01853737826",300],["2026-05-29","22","Peak Hour Slot",2400,"Sharfin-01349512139",100],["2026-05-30","15","Off Peak Hour Slot",1500,"Tauhid-01765700530",300],["2026-05-30","16","Off Peak Hour Slot",1500,"Tauhid-01765700530",300],["2026-05-30","17","Peak Hour Slot",2000,"Arif-01763658913",500],["2026-05-30","18","Peak Hour Slot",2300,"Shagor-01813150678",200],["2026-05-30","19","Peak Hour Slot",1200,"Shagor-01813150678",50],["2026-05-30","20","Peak Hour Slot",2400,"Mridul-01310772985",100],["2026-05-30","21","Peak Hour Slot",2200,"Sabbir Hossian-01798100071",300],["2026-05-30","22","Peak Hour Slot",2400,"Tusher-01309188322",100],["2026-05-30","23","Peak Hour Slot",1000,"Helin-0",1500],["2026-05-31","18","Peak Hour Slot",2400,"Jihad-01885895988",100],["2026-05-31","19","Peak Hour Slot",2200,"Sajidul-01877901439",300],["2026-05-31","20","Peak Hour Slot",2000,"Darul Nayeem-01867439248",500],["2026-05-31","21","Peak Hour Slot",2300,"Akash-01838905763",200],["2026-05-31","22","Peak Hour Slot",2200,"Niloy-01827448079",300],["2026-06-01","18","Peak Hour Slot",2200,"Mehrab-01629928616",300],["2026-06-01","19","Peak Hour Slot",1200,"Mehrab-01629928616",50],["2026-06-01","20","Peak Hour Slot",2200,"Shahriar -01848516130",300],["2026-06-01","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-06-01","22","Peak Hour Slot",2400,"Saiful-01875292968",100],["2026-06-01","23","Peak Hour Slot",2400,"Sharfin-01349512139",100],["2026-06-02","08","Off Peak Hour Slot",1900,"Linkon-01344561391",100],["2026-06-02","18","Peak Hour Slot",2400,"Arafat-01824059197",100],["2026-06-02","19","Peak Hour Slot",2400,"Arafat-01889976116",100],["2026-06-02","20","Peak Hour Slot",2200,"Shihab Sharif-01961664409",300],["2026-06-02","21","Peak Hour Slot",2400,"Mahfuz-01642548454",100],["2026-06-02","23","Peak Hour Slot",2300,"Jihad-01804231100",200],["2026-06-03","18","Peak Hour Slot",2200,"Foysal-01896165385",300],["2026-06-03","19","Peak Hour Slot",2200,"Noman-01323657309",300],["2026-06-03","20","Peak Hour Slot",2200,"Akash-01838905763",300],["2026-06-03","21","Peak Hour Slot",1100,"Akash-01838905763",150],["2026-06-03","22","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-06-03","23","Peak Hour Slot",0,"Rahat-01870150486",2500],["2026-06-04","18","Peak Hour Slot",2200,"Sinha-01825883638",300],["2026-06-04","19","Peak Hour Slot",2200,"Shihab Sharif-01961664409",300],["2026-06-04","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-06-04","22","Peak Hour Slot",2200,"Foysal-01896165385",300],["2026-06-05","19","Peak Hour Slot",2000,"Darul Nayeem-01867439248",500],["2026-06-05","20","Peak Hour Slot",2200,"Ariful-01853737826",300],["2026-06-05","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-06-05","23","Peak Hour Slot",2200,"Shawon-01715007292",300],["2026-06-06","18","Peak Hour Slot",2200,"Mujibur Rahman-01610689980",300],["2026-06-06","19","Peak Hour Slot",2200,"Shihab-01714360306",300],["2026-06-06","20","Peak Hour Slot",2400,"Section-01722007822",100],["2026-06-06","21","Peak Hour Slot",2400,"Abdullah-01746300933",100],["2026-06-07","18","Peak Hour Slot",2200,"Main Uddin-01865115419",300],["2026-06-07","19","Peak Hour Slot",2400,"Al Amin-01843126512",100],["2026-06-08","18","Peak Hour Slot",2100,"Fardin-0175368700",400],["2026-06-08","19","Peak Hour Slot",2200,"Imran-01920301500",300],["2026-06-08","20","Peak Hour Slot",2400,"Pronoy-01997747141",100],["2026-06-08","21","Peak Hour Slot",2000,"Darul Nayeem-01867439248",500],["2026-06-08","23","Peak Hour Slot",2100,"Sinha-01825883638",400],["2026-06-09","19","Peak Hour Slot",2200,"Darul Nayeem-01867439248",300],["2026-06-09","20","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-06-09","21","Peak Hour Slot",2100,"Hasan-01776360451",400],["2026-06-10","17","Peak Hour Slot",2000,"Shimanto-01346060675",500],["2026-06-10","18","Peak Hour Slot",2000,"Shimanto-01346060675",500],["2026-06-10","19","Peak Hour Slot",2000,"Shimanto-01346060675",500],["2026-06-10","20","Peak Hour Slot",2300,"Afsar/Bayejid/Jubayer/Shukkur-01788484898",200],["2026-06-10","21","Peak Hour Slot",2200,"Ridoy-01703812023",300],["2026-06-10","00","Peak Hour Slot",2200,"Talukdar-01859909323",300],["2026-06-11","20","Peak Hour Slot",2200,"Ashraful-01851706572",300],["2026-06-11","22","Peak Hour Slot",2300,"Tuhin-01349056446",200],["2026-06-11","23","Peak Hour Slot",1200,"Tuhin-01349056446",50],["2026-06-11","00","Peak Hour Slot",2300,"Tanvir-01872883020",200],["2026-06-12","15","Off Peak Hour Slot",1800,"Foysal-01851473437",0],["2026-06-12","16","Off Peak Hour Slot",1750,"Tauhid-01765700530",50],["2026-06-12","17","Off Peak Hour Slot",1750,"Tauhid-01765700530",50],["2026-06-12","18","Peak Hour Slot",2200,"Saddam-01918918967",300],["2026-06-12","19","Peak Hour Slot",2000,"Shuvon-01308684415",500],["2026-06-12","20","Peak Hour Slot",2200,"Ashraful-01850330625",300],["2026-06-12","21","Peak Hour Slot",2200,"Hasan-01776360451",300],["2026-06-12","22","Peak Hour Slot",2100,"Jamirul-01339903570",400],["2026-06-13","18","Peak Hour Slot",2200,"Rezaul-01850522457",300],["2026-06-13","19","Peak Hour Slot",2400,"Shihab-01714360306",100],["2026-06-13","20","Peak Hour Slot",2200,"Rifat-01715953916",300],["2026-06-13","22","Peak Hour Slot",2200,"Foysal-01896165385",300],["2026-06-14","20","Peak Hour Slot",1200,"Sabbir Hossian-01798100071",50],["2026-06-14","21","Peak Hour Slot",2200,"Habibur Rahman-01703960933",300],["2026-06-15","19","Peak Hour Slot",2400,"Asad-01812060029",100],["2026-06-15","20","Peak Hour Slot",2300,"Niloy-01740117798",200],["2026-06-16","19","Peak Hour Slot",2400,"Sajjad-01760711359",100],["2026-06-16","20","Peak Hour Slot",2300,"Sohan-01725785762",200],["2026-06-16","22","Peak Hour Slot",2000,"Mehedi-01734795697",500],["2026-06-17","19","Peak Hour Slot",2200,"Hasnat Abdullah-01867966068",300],["2026-06-17","21","Peak Hour Slot",2200,"Udoy/Sabbir-01798100071",300],["2026-06-18","20","Peak Hour Slot",2000,"Shihab-01859058793",500],["2026-06-18","21","Peak Hour Slot",2000,"Shihab-01859058793",500],["2026-06-18","22","Peak Hour Slot",2000,"Mintu Molla-01836927478",500],["2026-06-19","06","Off Peak Hour Slot",1700,"Hanif-01610587915",100],["2026-06-19","15","Off Peak Hour Slot",1800,"Azmain-01889115504",0],["2026-06-19","16","Off Peak Hour Slot",1650,"Musa-01858556866",150],["2026-06-19","17","Off Peak Hour Slot",1650,"Musa-01858556866",150],["2026-06-19","18","Peak Hour Slot",2200,"Foysal-01912084645",300],["2026-06-19","19","Peak Hour Slot",2400,"Dip-01311152405",100],["2026-06-19","20","Peak Hour Slot",2200,"Shobuj-001816833867/01712424660",300],["2026-06-19","21","Peak Hour Slot",2200,"Aminul/Azmain-01918164343",300],["2026-06-19","23","Peak Hour Slot",2200,"Siam-01332896051",300],["2026-06-20","16","Off Peak Hour Slot",1500,"Hasnat Abdullah-01867966068",300],["2026-06-20","19","Peak Hour Slot",2000,"Emon Sharif-01878683150",500],["2026-06-20","20","Peak Hour Slot",2250,"Shohag-01718085087",250],["2026-06-20","21","Peak Hour Slot",2250,"Shohag-01718085087",250],["2026-06-21","18","Peak Hour Slot",2200,"Regan-01821975500",300],["2026-06-21","19","Peak Hour Slot",2200,"Shihab-01894577037",300],["2026-06-21","20","Peak Hour Slot",2400,"Habib Pharmacy -01843126512",100],["2026-06-22","19","Peak Hour Slot",2200,"Mehedi-01707102704",300],["2026-06-22","20","Peak Hour Slot",2200,"Rifat-01715953916",300],["2026-06-22","21","Peak Hour Slot",2200,"Farid-01675422071",300],["2026-06-23","19","Peak Hour Slot",2200,"Rabbi-01834246176",300],["2026-06-23","20","Peak Hour Slot",2200,"Imran-01920301500",300],["2026-06-23","21","Peak Hour Slot",2200,"Obaydul-01647250670",300],["2026-07-01","18","Peak Hour Slot",2200,"ibrahim -01759353321",300],["2026-07-01","19","Peak Hour Slot",2400,"Asad-01812060029",100],["2026-07-01","20","Peak Hour Slot",2000,"Rahad-01886080123",500],["2026-07-01","21","Peak Hour Slot",2400,"Miraj-01748476191",100],["2026-07-01","23","Peak Hour Slot",2400,"Shuvo-01617040156",100],["2026-07-02","17","Peak Hour Slot",2000,"Azmain-01858556866",500],["2026-07-02","18","Peak Hour Slot",2200,"Noman-01323657309",300],["2026-07-02","19","Peak Hour Slot",2400,"Masud-01822690387",100],["2026-07-03","07","Off Peak Hour Slot",2000,"Foysal-01980801503",-200],["2026-07-03","08","Off Peak Hour Slot",1650,"Rayhan-01881212825",150],["2026-07-03","09","Off Peak Hour Slot",1650,"Rayhan-01881212825",150],["2026-07-03","19","Peak Hour Slot",2350,"Minhaj-01768275857",150],["2026-07-03","20","Peak Hour Slot",2200,"Aminul/Azmain-01918164343",300],["2026-07-03","21","Peak Hour Slot",2200,"Shobuj-01816833867/01712424660",300],["2026-07-03","23","Peak Hour Slot",2400,"Jubayer-01633004312",100],["2026-07-04","18","Peak Hour Slot",2400,"Mahim-01954339154",100],["2026-07-04","19","Peak Hour Slot",2400,"Sohan-01684723858",100],["2026-07-04","21","Peak Hour Slot",2400,"Saiful-01875292968",100],["2026-07-04","22","Peak Hour Slot",2200,"Shahriar-01703815588",300],["2026-07-05","18","Peak Hour Slot",2400,"Shanto-01818023487",100],["2026-07-05","19","Peak Hour Slot",2400,"Jonny-01606607365",100],["2026-07-05","20","Peak Hour Slot",2300,"Samir Bepari-01745809559",200],["2026-07-05","21","Peak Hour Slot",2340,"Shagor-01817438225",160],["2026-07-05","23","Peak Hour Slot",2400,"Rafsan-01882789386",100],["2026-07-06","18","Peak Hour Slot",2400,"Topu-01334482951",100],["2026-07-06","19","Peak Hour Slot",2350,"Imran-01920301500",150],["2026-07-06","20","Peak Hour Slot",2300,"Abdur Rahim-01941913082",200],["2026-07-06","21","Peak Hour Slot",2400,"Jihad-01885895988",100],["2026-07-07","18","Peak Hour Slot",2500,"Sabbir-01937145480",0],["2026-07-07","19","Peak Hour Slot",2400,"Miraj-01850251812",100],["2026-07-07","20","Peak Hour Slot",2300,"Ridoy-01703812023",200],["2026-07-08","21","Peak Hour Slot",2200,"Rajib-01867585019",300],["2026-07-09","18","Peak Hour Slot",2400,"Mahin-01954339154",100],["2026-07-09","19","Peak Hour Slot",2400,"Pronoy-01997747141",100],["2026-07-09","20","Peak Hour Slot",2300,"Jahidul/Tirtho-01701302995",200],["2026-07-09","22","Peak Hour Slot",3500,"Akash-01838905763",-1000],["2026-07-10","17","Peak Hour Slot",2500,"Mahim-01954339154",0],["2026-07-10","18","Peak Hour Slot",2400,"Niloy-01740117798",100],["2026-07-10","19","Peak Hour Slot",2400,"Ratul-01719182777",100],["2026-07-10","21","Peak Hour Slot",2300,"Shobuj-01816833867/01712424660",200],["2026-07-10","23","Peak Hour Slot",2000,"Tusher-01309188322",500],["2026-07-11","18","Peak Hour Slot",2400,"Ashraful-01904727509",100],["2026-07-11","19","Peak Hour Slot",2400,"Ratul-01826827546",100],["2026-07-11","20","Peak Hour Slot",2400,"Miraj-01321302991",100],["2026-07-11","21","Peak Hour Slot",2400,"Jubayer/Ikbal-01745428187",100],["2026-07-12","19","Peak Hour Slot",2400,"Alif-01997103910",100],["2026-07-12","20","Peak Hour Slot",2350,"Pronoy-01997747141",150],["2026-07-12","21","Peak Hour Slot",2300,"Siam-01942328990",200],["2026-07-12","13","Off Peak Hour Slot",1000,"Emon Sharif-01878683150",300],["2026-07-13","16","Off Peak Hour Slot",1400,"Sifat/Fardin-01896290996",100],["2026-07-13","18","Peak Hour Slot",2400,"Atik-01785732428",100],["2026-07-13","19","Peak Hour Slot",2400,"Ridoy-01613446713",100],["2026-07-13","20","Peak Hour Slot",2400,"Shourov-01313208219",100],["2026-07-13","22","Peak Hour Slot",3500,"Shagor/Imran-01885573582",250],["2026-07-14","21","Peak Hour Slot",2400,"Jubayer-01614264360",100],["2026-07-14","22","Peak Hour Slot",2300,"Samir Bepari-01745809559",200],["2026-07-14","23","Peak Hour Slot",2200,"Emon -01325682823",300],["2026-07-15","19","Peak Hour Slot",2400,"Showkot-01715532740",100],["2026-07-15","20","Peak Hour Slot",2000,"Tusher-01309188322",500],["2026-07-15","21","Peak Hour Slot",2400,"Akib/Kawsar/Foysal/Nafiz-01960103515",100],["2026-07-15","22","Peak Hour Slot",2400,"Shojol/Jihad-01312967182",100],["2026-07-16","16","Off Peak Hour Slot",2000,"Alif-01818721608",0],["2026-07-16","19","Peak Hour Slot",2500,"Rahad-01886080123",0],["2026-07-16","20","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-07-16","21","Peak Hour Slot",2300,"NAGAD Office-01858341145",200],["2026-07-16","23","Peak Hour Slot",1900,"Samir Bepari-01745809559",600],["2026-07-17","18","Peak Hour Slot",2400,"Topu-01334482951",100],["2026-07-17","19","Peak Hour Slot",2400,"Shanto-01776415829",100],["2026-07-17","20","Peak Hour Slot",2400,"Rohan-01797532852",100],["2026-07-17","21","Peak Hour Slot",2400,"Tuhin-01326827524",100],["2026-07-17","23","Peak Hour Slot",2200,"Tusher-01309188322",300],["2026-07-18","20","Peak Hour Slot",2200,"Darul Nayeem-01867439248",300],["2026-07-18","21","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-07-18","22","Peak Hour Slot",2400,"Shagor-01335135810",100],["2026-07-18","23","Peak Hour Slot",2200,"Sanaullah/Himel-01746987751",300],["2026-07-19","18","Peak Hour Slot",2500,"ibrahim/Nibir-01908112549",0],["2026-07-19","19","Peak Hour Slot",2400,"Shopnil-01629114883",100],["2026-07-19","20","Peak Hour Slot",2400,"Sohan-01866765063",100],["2026-07-19","21","Peak Hour Slot",2200,"Noman-01323657309",300],["2026-07-20","18","Peak Hour Slot",2400,"Sihan-01962810384",100],["2026-07-20","19","Peak Hour Slot",2400,"Miraj-01765233035",100],["2026-07-20","20","Peak Hour Slot",2400,"Robin-01864804192",100],["2026-07-20","21","Peak Hour Slot",2500,"Rifat-01623895279",0],["2026-07-20","23","Peak Hour Slot",2400,"Saiful-01875292968",100],["2026-07-21","18","Peak Hour Slot",2000,"Emon Sharif-01878683150",500],["2026-07-21","19","Peak Hour Slot",2400,"Sifat/Fardin-01896290996",100],["2026-07-21","20","Peak Hour Slot",2200,"Tusher-01309188322",300],["2026-07-21","21","Peak Hour Slot",2400,"Rabbi-01745525318",100],["2026-07-21","23","Peak Hour Slot",2400,"Afsar/Bayejid/Jubayer/Shukkur-01788484898",100],["2026-07-22","16","Peak Hour Slot",1400,"Emon Sharif-01878683150",1100],["2026-07-22","17","Peak Hour Slot",2500,"Jakaria-01966031007",0],["2026-07-22","18","Peak Hour Slot",2500,"Abdur Rahman-01813295711",0],["2026-07-22","19","Peak Hour Slot",2400,"Alvi-01632973413",100],["2026-07-22","20","Peak Hour Slot",2400,"Arafat-01636652823",100],["2026-07-22","21","Peak Hour Slot",2400,"Rifat-01623895279",100],["2026-07-22","23","Peak Hour Slot",2000,"Pial-01735259655",500],["2026-07-23","16","Off Peak Hour Slot",1900,"Tauhid-01765700530",100],["2026-07-23","17","Off Peak Hour Slot",1900,"Tauhid-01765700530",100],["2026-07-23","19","Peak Hour Slot",2400,"Mahim-01954339154",100],["2026-07-23","20","Peak Hour Slot",2400,"Bkash Office-01817064847",100],["2026-07-23","21","Peak Hour Slot",2500,"Siam-01942328990",0],["2026-07-23","23","Peak Hour Slot",2400,"Firoz-01726152628",100],["2026-07-23","00","Peak Hour Slot",2400,"Ripon-01970591297",100],["2026-07-24","16","Off Peak Hour Slot",1800,"Rafsan-01714468308",200],["2026-07-24","17","Peak Hour Slot",2400,"Shanto-01818023487",100],["2026-07-24","18","Peak Hour Slot",2400,"Moktar-01300242448",100],["2026-07-24","19","Peak Hour Slot",2400,"Akib/Kawsar/Foysal/Nafiz-01960103515",100],["2026-07-24","20","Peak Hour Slot",2400,"Shahriar-01315135104",100],["2026-07-24","22","Off Peak Hour Slot",3500,"Niloy-01740117798",250],["2026-07-25","16","Peak Hour Slot",1500,"Mahmudul-01304191384",500],["2026-07-25","18","Peak Hour Slot",2200,"Sajid-01600987101",300],["2026-07-25","19","Peak Hour Slot",2400,"Foysal-01980801503",100],["2026-07-25","20","Peak Hour Slot",2400,"Sohan-01866765063",100],["2026-07-25","21","Peak Hour Slot",2200,"Emon -01325682823",300],["2026-07-25","23","Peak Hour Slot",2000,"Shojol/Habib-01349512233",500],["2026-07-26","17","Peak Hour Slot",2000,"Sohan-01866765063",500],["2026-07-26","18","Peak Hour Slot",2400,"Saiful/Jihad-01892082116",100],["2026-07-26","19","Peak Hour Slot",2400,"Tanvir-01989494632",100],["2026-07-26","20","Peak Hour Slot",2400,"Aminul-01942774099",100],["2026-07-26","21","Peak Hour Slot",2400,"Robin-01864804192",100],["2026-07-26","23","Peak Hour Slot",2400,"Tamim/Jishan-01843166150",100],["2026-07-27","17","Off Peak Hour Slot",2000,"Rifat-01715953916",0],["2026-07-27","18","Peak Hour Slot",2300,"Azmain-01889115504",200],["2026-07-27","19","Peak Hour Slot",2500,"Al Amin-01843126512",0],["2026-07-27","20","Peak Hour Slot",2400,"Al Amin-01843126512",100],["2026-07-27","21","Peak Hour Slot",2400,"Hasnat Abdullah-01867966068",100],["2026-07-27","23","Peak Hour Slot",2000,"Parvej-01843877697",500],["2026-07-28","19","Peak Hour Slot",2400,"Foysal-01980801503",100],["2026-07-28","20","Peak Hour Slot",2400,"Masud-01822690387",100],["2026-07-28","21","Peak Hour Slot",2500,"Al Hadis-01342742653",0],["2026-07-29","17","Off Peak Hour Slot",1500,"Emon Sharif-01878683150",500],["2026-07-29","18","Peak Hour Slot",2300,"Shoriful Islam-01319916776",200],["2026-07-29","20","Peak Hour Slot",2200,"Siam-01631215898",300],["2026-07-29","21","Peak Hour Slot",2125,"Noman-01323657309",375],["2026-07-29","22","Peak Hour Slot",2125,"Noman-01323657309",375],["2026-07-30","17","Peak Hour Slot",2200,"Foysal-01851473437",300],["2026-07-30","19","Peak Hour Slot",2400,"Imran/Joypara Nirbachon Office-01783388550",100],["2026-07-30","20","Peak Hour Slot",2400,"Alvi-01632973413",100],["2026-07-30","21","Peak Hour Slot",2000,"Roman-01703813754",500],["2026-07-30","22","Peak Hour Slot",2300,"Rohas-01890919042",200],["2026-07-30","23","Peak Hour Slot",2300,"Sohan-01725785762",200],["2026-07-30","01","Peak Hour Slot",2200,"Ripon-01970591297",300],["2026-07-31","17","Off Peak Hour Slot",1500,"Siam-01842726870",500],["2026-07-31","18","Peak Hour Slot",2300,"Jahidul/Tirtho-01701302995",200],["2026-07-31","19","Peak Hour Slot",2400,"Abir-01855578574",100],["2026-07-31","20","Peak Hour Slot",2500,"Mamun-01756600900",0],["2026-07-31","22","Peak Hour Slot",3500,"Minhaj-01824668697",250],["2026-07-31","23","Peak Hour Slot",2400,"Firoz-01825471194",100],["2026-08-01","18","Peak Hour Slot",2200,"Imran/Joypara Nirbachon Office-01783388550",300],["2026-08-01","19","Peak Hour Slot",2200,"Imran/Joypara Nirbachon Office-01783388550",300],["2026-08-01","20","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-08-01","22","Peak Hour Slot",3500,"Sajjad-01794315665",250],["2026-08-01","23","Peak Hour Slot",2300,"Yeasin-01570286751",200],["2026-08-02","18","Peak Hour Slot",2400,"Riad-01351709940",100],["2026-08-02","19","Peak Hour Slot",2200,"Bkash Office-01761240305",300],["2026-08-02","20","Peak Hour Slot",3400,"Rabbi-01834246176",350],["2026-08-02","21","Peak Hour Slot",2000,"Rakib - Our Manager-01319047010",500],["2026-08-03","19","Peak Hour Slot",2200,"Samir Bepari-01745809559",300],["2026-08-03","20","Peak Hour Slot",2300,"Didar-01885577459",200],["2026-08-03","21","Peak Hour Slot",2300,"Shahin-01842364536",200],["2026-08-04","18","Peak Hour Slot",2400,"Dipu-01848535144",100],["2026-08-04","19","Peak Hour Slot",2000,"Shuvo (S/O Samir Bepari)-01330018427",500],["2026-08-04","21","Peak Hour Slot",2400,"Akib/Kawsar/Foysal/Nafiz-01960103515",100],["2026-08-04","22","Peak Hour Slot",2100,"Arafat-01751458270",400],["2026-08-05","18","Peak Hour Slot",2300,"Azmain-01889115504",200],["2026-08-05","19","Peak Hour Slot",2400,"Shoriful Islam-01319916776",100],["2026-08-05","20","Peak Hour Slot",3600,"Habib Pharmacy -01843126512",150],["2026-08-05","22","Peak Hour Slot",1900,"Tusher-01309188322",600],["2026-08-05","23","Peak Hour Slot",2400,"Sohan-01725785762",100],["2026-08-06","18","Peak Hour Slot",2300,"Imran/Joypara Nirbachon Office-01783388550",200],["2026-08-06","19","Peak Hour Slot",2400,"Fardin-01991809161",100],["2026-08-06","20","Peak Hour Slot",2500,"Labib-01970580464",0],["2026-08-06","21","Peak Hour Slot",2200,"Arafat-01751458270",300],["2026-08-06","23","Peak Hour Slot",2400,"Siam-01870189603",100],["2026-08-07","17","Off Peak Hour Slot",2000,"Imran/Joypara Nirbachon Office-01783388550",0],["2026-08-07","18","Peak Hour Slot",3500,"Tirtho-01648054148",250],["2026-08-07","20","Peak Hour Slot",2400,"Jishan-01842117225",100],["2026-08-07","21","Peak Hour Slot",2500,"Rafi-01856101810",0],["2026-08-07","22","Peak Hour Slot",2000,"Helin-0",500],["2026-08-08","18","Peak Hour Slot",2400,"Abu Bokkor-019545184437",100],["2026-08-08","19","Peak Hour Slot",2400,"Aman-01323564023",100],["2026-08-08","20","Peak Hour Slot",2300,"Shohag-01320268238",200],["2026-08-08","22","Peak Hour Slot",2400,"Tanvir-01791568801",100],["2026-08-08","23","Peak Hour Slot",2400,"Tamim/Jishan-01843166150",100],["2026-08-09","18","Peak Hour Slot",3600,"Shakil Mahmud-01620797980",150],["2026-08-09","20","Peak Hour Slot",2200,"Darul Nayeem-01867439248",300],["2026-08-09","21","Peak Hour Slot",2400,"Shagor/Imran-01885573582",100],["2026-08-09","22","Peak Hour Slot",2300,"Shourov-01837745821",200],["2026-08-09","23","Peak Hour Slot",2300,"Rashed-01407493065",200],["2026-08-10","18","Peak Hour Slot",2200,"Shahriar-01703815588",300],["2026-08-10","19","Peak Hour Slot",3500,"Miraj-01339957305",250],["2026-08-10","21","Peak Hour Slot",2400,"Miraj-01765233035",100],["2026-08-10","22","Peak Hour Slot",2400,"Yeasin-01570286751",100],["2026-08-10","23","Peak Hour Slot",2400,"Siam-01836941360",100],["2026-08-11","18","Peak Hour Slot",2300,"Imran/Joypara Nirbachon Office-01783388550",200],["2026-08-11","19","Peak Hour Slot",2400,"Himel-01787702700",100],["2026-08-11","20","Peak Hour Slot",2400,"Saiful-01875292968",100],["2026-08-11","21","Peak Hour Slot",2400,"Rifat-01623895279",100],["2026-08-11","23","Peak Hour Slot",2400,"Siddik-01805709457",100],["2026-08-11","00","Peak Hour Slot",2400,"Afsar/Bayejid/Jubayer/Shukkur-01788484898",100],["2026-08-12","17","Peak Hour Slot",1800,"Sabbir-01935581204",700],["2026-08-12","18","Peak Hour Slot",2400,"Shoriful Islam-01319916776",100],["2026-08-12","19","Peak Hour Slot",2400,"Shojol/Jihad-01312967182",100],["2026-08-12","20","Peak Hour Slot",2200,"Shobuj-01816833867",300],["2026-08-12","22","Peak Hour Slot",2400,"Sabbir-01991357567",100],["2026-08-12","23","Peak Hour Slot",2000,"Rakib - Our Manager-01319047010",500],["2026-08-13","18","Peak Hour Slot",2500,"Shawon-01680284238",0],["2026-08-13","19","Peak Hour Slot",2400,"Aminul/Asad-01942774099",100],["2026-08-13","20","Peak Hour Slot",2400,"Darul Nayeem-01867439248",100],["2026-08-13","22","Peak Hour Slot",2100,"Yeasin-01710870512",400],["2026-08-13","23","Peak Hour Slot",2100,"Yeasin-01710870512",400],["2026-08-13","00","Peak Hour Slot",2300,"Ripon-01609303497",200],["2026-08-14","18","Peak Hour Slot",2200,"Hasan-01776360451",300],["2026-08-14","19","Peak Hour Slot",3500,"Akash-01838905763",250],["2026-08-14","21","Peak Hour Slot",2200,"Shobuj-01816833867/01712424660",300],["2026-08-14","22","Peak Hour Slot",2200,"Shobuj-01816833867/01712424660",300],["2026-08-14","23","Peak Hour Slot",2300,"Foysal-01852482727",200],["2026-08-15","16","Off Peak Hour Slot",1600,"Sifat/Fardin-01896290996",400],["2026-08-15","17","Off Peak Hour Slot",1800,"Samir Bepari-01745809559",200],["2026-08-15","19","Peak Hour Slot",3500,"Al Amin-01843126512",250],["2026-08-15","21","Peak Hour Slot",2400,"Jubayer/Ikbal-01745428187",100],["2026-08-15","22","Peak Hour Slot",2000,"Tusher-01309188322",500],["2026-08-16","17","Peak Hour Slot",2000,"Ramim - Joypara Liberty-01910630153",500],["2026-08-16","18","Peak Hour Slot",2000,"Ramim - Joypara Liberty-01910630153",500],["2026-08-16","19","Peak Hour Slot",2200,"Darul Nayeem-01867439248",300],["2026-08-16","20","Peak Hour Slot",2400,"Mehedi Hasan-01843038230",100],["2026-08-16","21","Peak Hour Slot",1000,"Rakib - Our Manager-01319047010",250],["2026-08-16","22","Peak Hour Slot",1970,"Siam - Owner Legends-01625669403",530],["2026-08-17","17","Off Peak Hour Slot",1800,"Imran/Joypara Nirbachon Office-01783388550",200],["2026-08-17","18","Peak Hour Slot",2200,"Emon -01325682823",300],["2026-08-17","19","Peak Hour Slot",2300,"Shumon-01918953744",200],["2026-08-17","20","Peak Hour Slot",2400,"Rayhan-01633353576",100],["2026-08-17","23","Peak Hour Slot",2400,"Siam-01836941360",100],["2026-08-18","17","Off Peak Hour Slot",1700,"Sifat/Fardin-01896290996",300],["2026-08-18","18","Peak Hour Slot",2300,"Niloy-01827448079",200],["2026-08-18","19","Peak Hour Slot",2500,"Saiful/Jihad-01892082116",0],["2026-08-18","20","Peak Hour Slot",2400,"Jishan-01842117225",100],["2026-08-18","21","Peak Hour Slot",2400,"Sohan-01725785762",100],["2026-08-19","18","Peak Hour Slot",2200,"Shahriar-01703815588",300],["2026-08-19","19","Peak Hour Slot",2400,"Sanaullah/Himel-01746987751",100],["2026-08-19","20","Peak Hour Slot",2400,"Sunny-01828640278",100],["2026-08-19","21","Peak Hour Slot",2300,"Shagor/Imran-01885573582",200],["2026-08-19","23","Peak Hour Slot",2200,"Noman-01883424675",300],["2026-08-20","18","Peak Hour Slot",2500,"ibrahim/Nibir-01908112549",0],["2026-08-20","19","Peak Hour Slot",2400,"Riad-01955217730",100],["2026-08-20","21","Peak Hour Slot",3500,"Shojol/Jihad-01312967182",250],["2026-08-20","23","Peak Hour Slot",2250,"Habib-01877754277",250],["2026-08-20","00","Peak Hour Slot",2250,"Habib-01877754277",250],["2026-08-21","16","Off Peak Hour Slot",1800,"Nishad-01719880886",200],["2026-08-21","18","Peak Hour Slot",2000,"Arman-01337932728",500],["2026-08-21","19","Peak Hour Slot",2400,"Mamun-01756600900",100],["2026-08-21","20","Peak Hour Slot",2200,"Shobuj-01816833867/01712424660",300],["2026-08-21","22","Peak Hour Slot",2300,"Robin-01843809848",200],["2026-08-21","23","Peak Hour Slot",2000,"Shojol/Habib-01349512233",500],["2026-08-21","00","Off Peak Hour Slot",2300,"Tanvir-01329946210",200],["2026-08-22","16","Off Peak Hour Slot",2000,"Talha-01949417536",0],["2026-08-22","17","Peak Hour Slot",2000,"Aminul/Asad-01942774099",0],["2026-08-22","18","Peak Hour Slot",2400,"Imran/Joypara Nirbachon Office-01783388550",100],["2026-08-22","19","Peak Hour Slot",2200,"Darul Nayeem-01867439248",300],["2026-08-22","20","Peak Hour Slot",2400,"Aminul/Azmain-01918164343",100],["2026-08-22","22","Peak Hour Slot",2400,"Hilton-01995299032",100],["2026-08-22","00","Peak Hour Slot",2300,"Tanvir-01329946210",200],["2026-08-23","18","Peak Hour Slot",2200,"Soleman-01342636620",300],["2026-08-23","19","Peak Hour Slot",2400,"Robin-01853344652",100],["2026-08-23","20","Peak Hour Slot",2400,"Rashed/Rasel-01407493065",100],["2026-08-23","21","Peak Hour Slot",2300,"Rifat-01623895279",200],["2026-08-23","23","Peak Hour Slot",2300,"Jubayer-01727256179",200]],
+  FALLBACK_EXPENSES_RAW=[["2026-01-28","Inauguration",13500],["2026-01-29","Inauguration",4650],["2026-01-29","Electricity Bill",1665],["2026-01-30","Inauguration",1690],["2026-01-31","Inauguration",1950],["2026-01-31","Accounts Payable",5000],["2026-02-02","Food Bill",200],["2026-02-02","Internet Bill",530],["2026-02-08","Accounts Payable",7000],["2026-02-09","Salary-Rakib",15000],["2026-02-14","Monthly Rent",5000],["2026-02-14","Accounts Payable",5000],["2026-02-15","Salary-Rakib",5715],["2026-02-15","Accounts Payable",40000],["2026-02-15","Transportation Expenses",60],["2026-02-17","Fuel",250],["2026-02-18","Transportation Expenses",80],["2026-02-18","Food Bill",50],["2026-02-19","Generator Expenses",6250],["2026-02-19","Transportation Expenses",100],["2026-02-19","Other Expenses",400],["2026-02-21","Accounts Payable",5000],["2026-02-24","Other Expenses",80],["2026-03-01","Electricity Bill",8245],["2026-03-04","Internet Bill",530],["2026-03-07","Accounts Payable",5000],["2026-03-08","Salary-Rakib",9285],["2026-03-12","Accounts Payable",15000],["2026-03-13","Accounts Payable",5000],["2026-03-17","Bonus",7500],["2026-03-19","Fuel",3000],["2026-03-19","Transportation Expenses",120],["2026-03-26","Accounts Payable",3500],["2026-03-26","Accessories",1500],["2026-03-26","Phone Bill",600],["2026-03-26","PR Activity",1500],["2026-03-26","Food Bill",70],["2026-03-28","Maintenance",500],["2026-03-29","Electricity Bill",3660],["2026-03-29","Internet Bill",530],["2026-03-29","Miscellaneous",50],["2026-03-29","PR Activity",1500],["2026-03-29","Food Bill",160],["2026-03-29","Miscellaneous",520],["2026-04-02","Stationaries",200],["2026-04-02","Transportation Expenses",60],["2026-04-04","Miscellaneous",20],["2026-04-05","Transportation Expenses",290],["2026-04-06","Monthly Rent",5000],["2026-04-04","Food Bill",3400],["2026-04-07","Electric Works",1530],["2026-04-08","Fuel",1700],["2026-04-08","Transportation Expenses",320],["2026-04-09","Food Bill",160],["2026-04-11","Miscellaneous",70],["2026-04-11","Salary-Rakib",15000],["2026-04-11","Accounts Payable",1500],["2026-04-12","Accessories",700],["2026-04-12","Accounts Payable",5000],["2026-04-12","Other Expenses",1000],["2026-04-12","Miscellaneous",80],["2026-04-12","Transportation Expenses",80],["2026-04-13","Other Expenses",1000],["2026-04-13","Generator Fixing Expenses",800],["2026-04-13","Transportation Expenses",70],["2026-04-14","Other Expenses",1500],["2026-04-19","Miscellaneous",180],["2026-04-19","Miscellaneous",200],["2026-04-19","Transportation Expenses",60],["2026-04-21","Transportation Expenses",220],["2026-04-21","Miscellaneous",360],["2026-04-23","Fuel",20000],["2026-04-25","Other Expenses",2000],["2026-04-26","Electricity Bill",4060],["2026-04-27","Accessories",650],["2026-04-27","Transportation Expenses",70],["2026-04-28","Phone Bill",600],["2026-05-01","Accessories",250],["2026-05-01","Transportation Expenses",60],["2026-05-02","Miscellaneous",130],["2026-05-02","Miscellaneous",440],["2026-05-02","Miscellaneous",100],["2026-05-02","Miscellaneous",190],["2026-05-02","Miscellaneous",40],["2026-05-02","Miscellaneous",135],["2026-05-02","Transportation Expenses",80],["2026-05-03","Accessories",400],["2026-05-03","Accessories",1500],["2026-05-03","PR Activity",4350],["2026-05-03","Salary-Emon",1000],["2026-05-03","Transportation Expenses",100],["2026-05-04","Internet Bill",530],["2026-05-05","Salary-Emon",1000],["2026-05-06","Miscellaneous",90],["2026-05-06","Miscellaneous",120],["2026-05-05","Accounts Payable",140000],["2026-05-06","Salary-Rakib",15000],["2026-05-08","Miscellaneous",700],["2026-05-09","Salary-Emon",1000],["2026-05-11","Accessories",1400],["2026-05-11","Miscellaneous",90],["2026-05-11","Transportation Expenses",80],["2026-05-13","Salary-Emon",3700],["2026-05-13","Other Expenses",3000],["2026-05-15","Salary-Emon",4000],["2026-05-15","Salary-Rakib",3000],["2026-05-15","Phone Bill",600],["2026-05-15","Transportation Expenses",40],["2026-05-17","Accounts Payable",5000],["2026-05-18","Accessories",1400],["2026-05-20","Salary-Rakib",2000],["2026-05-20","Salary-Emon",3000],["2026-05-21","Electricity Bill",4460],["2026-05-21","Miscellaneous",90],["2026-05-21","Transportation Expenses",60],["2026-05-24","Other Expenses",11600],["2026-05-24","Transportation Expenses",660],["2026-05-24","Maintenance",100],["2026-05-24","Food Bill",210],["2026-05-24","Miscellaneous",200],["2026-05-25","Bonus",1500],["2026-05-27","Bonus",7500],["2026-05-27","Miscellaneous",560],["2026-05-27","Transportation Expenses",80],["2026-05-31","Monthly Rent",5000],["2026-05-31","Other Expenses",4360],["2026-05-31","Food Bill",670],["2026-05-31","Miscellaneous",400],["2026-05-31","Accounts Payable",60000],["2026-06-01","Salary-Emon",2000],["2026-06-01","Accessories",1400],["2026-06-01","Accessories",2880],["2026-06-01","Miscellaneous",340],["2026-06-01","Transportation Expenses",80],["2026-06-02","Salary-Rakib",15000],["2026-06-02","Salary-Emon",3500],["2026-06-02","Salary-Emon",200],["2026-06-05","Internet Bill",530],["2026-06-06","Food Bill",900],["2026-06-07","Maintenance",1000],["2026-06-10","Accessories",1300],["2026-06-10","Phone Bill",600],["2026-06-15","Accounts Payable",60000],["2026-06-16","Generator Fixing Expenses",4500],["2026-06-16","Miscellaneous",80],["2026-06-19","Maintenance",3000],["2026-06-19","Accessories",650],["2026-06-19","Transportation Expenses",80],["2026-06-19","Salary-Rakib",4000],["2026-06-20","Transportation Expenses",200],["2026-06-20","Miscellaneous",150],["2026-06-22","Salary-Emon",300],["2026-06-22","Salary-Emon",7000],["2026-06-23","Accounts Payable",20000],["2026-06-26","Food Bill",600],["2026-06-26","Monthly Rent",5000],["2026-06-23","Maintenance",1400],["2026-06-23","Accessories",700],["2026-06-23","Transportation Expenses",80],["2026-06-23","Maintenance",5250],["2026-06-23","Maintenance",1200],["2026-06-23","Transportation Expenses",500],["2026-06-23","Maintenance",1000],["2026-06-24","Maintenance",12500],["2026-06-24","Transportation Expenses",1080],["2026-06-24","Food Bill",215],["2026-06-24","Food Bill",110],["2026-06-25","Miscellaneous",240],["2026-06-25","Transportation Expenses",60],["2026-06-25","Food Bill",90],["2026-06-25","Maintenance",3000],["2026-06-26","Maintenance",5250],["2026-06-26","Transportation Expenses",300],["2026-06-26","Food Bill",950],["2026-06-26","Miscellaneous",490],["2026-06-26","Maintenance",1000],["2026-06-26","Transportation Expenses",140],["2026-06-26","Maintenance",17000],["2026-06-27","Maintenance",1800],["2026-06-27","Maintenance",8000],["2026-06-27","Transportation Expenses",600],["2026-06-28","Food Bill",170],["2026-06-28","Maintenance",780],["2026-06-28","Transportation Expenses",40],["2026-06-29","Maintenance",4200],["2026-06-29","Maintenance",900],["2026-06-29","Transportation Expenses",300],["2026-06-29","Maintenance",1700],["2026-06-29","Maintenance",2000],["2026-06-29","Food Bill",1200],["2026-06-29","Maintenance",1700],["2026-06-30","Maintenance",2500],["2026-06-30","Maintenance",10000],["2026-07-02","Salary-Rakib",3000],["2026-07-02","Salary-Emon",1000],["2026-07-03","Electricity Bill",10125],["2026-07-03","Internet Bill",530],["2026-07-04","Phone Bill",600],["2026-07-05","Accessories",1500],["2026-07-05","Transportation Expenses",80],["2026-07-06","Transportation Expenses",40],["2026-07-09","Accessories",1400],["2026-07-09","Accessories",60],["2026-07-09","Transportation Expenses",80],["2026-07-11","Transportation Expenses",120],["2026-07-13","Transportation Expenses",60],["2026-07-13","Salary-Rakib",3500],["2026-07-13","Salary-Emon",5500],["2026-07-16","Generator Fixing Expenses",4000],["2026-07-16","Food Bill",320],["2026-07-16","Transportation Expenses",200],["2026-07-16","Salary-Rakib",3000],["2026-07-16","Salary-Emon",3000],["2026-07-17","Monthly Rent",5000],["2026-07-17","Other Expenses",2000],["2026-07-19","Accessories",1400],["2026-07-19","Transportation Expenses",80],["2026-07-20","Salary-Emon",3000],["2026-07-22","Electricity Bill",4720],["2026-07-22","Transportation Expenses",40],["2026-07-23","Accessories",1400],["2026-07-23","Transportation Expenses",90],["2026-07-25","Salary-Rakib",5000],["2026-07-25","Salary-Emon",1000],["2026-07-26","Transportation Expenses",100],["2026-07-27","Transportation Expenses",1500],["2026-07-28","Transportation Expenses",120],["2026-07-29","Salary-Emon",5000],["2026-07-30","Accessories",1000],["2026-07-30","Transportation Expenses",80],["2026-07-30","Fuel",300],["2026-07-31","Maintenance",1000],["2026-07-31","Miscellaneous",120],["2026-08-01","Fuel",1500],["2026-08-03","Phone Bill",600],["2026-08-02","Accessories",1530],["2026-08-02","Transportation Expenses",80],["2026-08-04","Transportation Expenses",80],["2026-08-04","Accessories",40],["2026-08-04","Accessories",4400],["2026-08-05","Labour Cost",200],["2026-08-07","Internet Bill",530],["2026-08-08","Fuel",750],["2026-08-09","Fuel",750],["2026-08-10","Accessories",1400],["2026-08-10","Transportation Expenses",90],["2026-08-11","Fuel",750],["2026-08-13","Fuel",750],["2026-08-13","Transportation Expenses",40],["2026-08-16","Transportation Expenses",100],["2026-08-16","Food Bill",150],["2026-08-17","Fuel",750],["2026-08-18","Salary-Emon",5000],["2026-08-18","Salary-Rakib",7500],["2026-08-18","Transportation Expenses",100],["2026-08-19","Salary-Emon",1500],["2026-08-19","Monthly Rent",5000],["2026-08-19","Monthly Rent",5000],["2026-08-19","Transportation Expenses",60],["2026-08-20","Accessories",1600],["2026-08-20","Fuel",750],["2026-08-20","Transportation Expenses",80],["2026-08-22","Accounts Payable",50000],["2026-08-23","Accessories",2620],["2026-08-23","Transportation Expenses",80]];
+
+  function normalizeSalesRaw(rows){
+    return rows.map(r=>({date:new Date(r[0]), hour:r[1], desc:r[2], paid:r[3], client:r[4], discount:r[5]}));
+  }
+  function normalizeExpensesRaw(rows){
+    return rows.map(r=>({date:new Date(r[0]), cat:r[1], amount:r[2]}));
   }
 
   /* ============================================================
@@ -1364,28 +1552,75 @@
   const banner = document.getElementById("fallback-banner");
   const bannerDetail = document.getElementById("banner-detail");
   const refreshBtn = document.getElementById("refresh-btn");
+  const periodSelect = document.getElementById("period-select");
+  const periodNote = document.getElementById("period-note");
+  const pnlPrintBtn = document.getElementById("pnl-print-btn");
 
   function setStatus(state, text){
     liveDot.className = "live-dot " + state;
     liveText.textContent = text;
   }
 
+  // Module-level cache of the full, unfiltered history for the currently loaded
+  // data source (live or fallback). The period filter recomputes from this without
+  // needing to re-fetch.
+  let RAW = { sales: [], expenses: [] };
+  let GLOBAL_MODEL = null;
+
+  function applyFilter(){
+    if(!RAW.sales.length && !RAW.expenses.length) return;
+    const filter = parseFilterValue(periodSelect.value);
+    const label = periodLabel(filter);
+    periodNote.textContent = filter.type==='all' ? '' : ('Showing ' + label);
+
+    const {sales: fSales, expenses: fExpenses} = filterByPeriod(RAW.sales, RAW.expenses, filter);
+    const refDate = GLOBAL_MODEL ? GLOBAL_MODEL.asOf : new Date();
+    const periodModel = computeModel(fSales, fExpenses, refDate);
+    render(periodModel, GLOBAL_MODEL, {periodLabel: label});
+
+    const curPnL = computePnL(fSales, fExpenses);
+    const pf = priorFilter(filter);
+    let priorPnL = null, priorLabel = null;
+    if(pf){
+      const {sales: pSales, expenses: pExpenses} = filterByPeriod(RAW.sales, RAW.expenses, pf);
+      if(pSales.length || pExpenses.length){
+        priorPnL = computePnL(pSales, pExpenses);
+        priorLabel = periodLabel(pf);
+      }
+    }
+    renderPnL(curPnL, priorPnL, label, priorLabel);
+  }
+
+  function loadFromRaw(sales, expenses){
+    RAW.sales = sales;
+    RAW.expenses = expenses;
+    GLOBAL_MODEL = computeModel(sales, expenses);
+    const currentValue = periodSelect.value;
+    const {html} = buildPeriodOptions(sales, expenses);
+    periodSelect.innerHTML = html;
+    // preserve the user's selection across a refresh if it still exists as an option
+    if([...periodSelect.options].some(o=>o.value===currentValue)) periodSelect.value = currentValue;
+    applyFilter();
+  }
+
   async function loadLive(){
     setStatus("loading", "Fetching latest data from Google Sheet…");
     refreshBtn.disabled = true;
     try{
-      const [sales, expenses] = await Promise.all([
+      const [salesTbl, expenseTbl] = await Promise.all([
         fetchSheetCSV(SALES_SHEET),
         fetchSheetCSV(EXPENSE_SHEET),
       ]);
-      const model = buildModel(sales, expenses);
-      render(model);
+      const sales = parseSalesTable(salesTbl);
+      const expenses = parseExpenseTable(expenseTbl);
+      if(!sales.length) throw new Error("no completed bookings parsed");
+      loadFromRaw(sales, expenses);
       banner.classList.remove("show");
       const now = new Date();
       setStatus("ok", "Live · last synced " + now.toLocaleString());
     } catch(err){
       console.error("Live fetch failed:", err);
-      render(fallbackModel());
+      loadFromRaw(normalizeSalesRaw(FALLBACK_SALES_RAW), normalizeExpensesRaw(FALLBACK_EXPENSES_RAW));
       banner.classList.add("show");
       bannerDetail.textContent = "Couldn't reach the live Google Sheet (" + err.message + "). This is usually because the sheet isn't shared as \"Anyone with the link – Viewer\" yet, or the network is blocking Google. Showing the last saved snapshot instead.";
       setStatus("err", "Offline · showing last saved snapshot");
@@ -1395,6 +1630,8 @@
   }
 
   refreshBtn.addEventListener("click", loadLive);
+  periodSelect.addEventListener("change", applyFilter);
+  if(pnlPrintBtn) pnlPrintBtn.addEventListener("click", ()=>window.print());
   window.addEventListener("resize", ()=>{ /* charts redraw on next load; cheap no-op guard */ });
 
   loadLive();
