@@ -958,6 +958,20 @@
   const HM_HOURS = ["06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23","00","01","02"];
   const WEEKDAY_LABELS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
+  // Slot times can come as 24h ("20:00:00") or 12h ("8:00:00 PM") depending on
+  // the sheet's cell formatting — normalize either to a zero-padded 24h hour string.
+  function parseHour24(slotStr){
+    if(!slotStr) return "";
+    const s = String(slotStr).trim();
+    const m = s.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?/);
+    if(!m) return s.slice(0,2);
+    let h = parseInt(m[1],10);
+    const ampm = m[4] ? m[4].toUpperCase() : null;
+    if(ampm === "PM" && h !== 12) h += 12;
+    if(ampm === "AM" && h === 12) h = 0;
+    return String(h).padStart(2,'0');
+  }
+
   function buildModel(salesTbl, expenseTbl){
     const H = salesTbl.header;
     const iDate = colIdx(H,"Date"), iSlot = colIdx(H,"Slot"), iDesc = colIdx(H,"Description"),
@@ -971,7 +985,7 @@
       const d = parseDate(r[iDate]);
       if(!d) return;
       sales.push({
-        date:d, hour:(r[iSlot]||"").slice(0,2), desc:(r[iDesc]||"").trim(),
+        date:d, hour:parseHour24(r[iSlot]), desc:(r[iDesc]||"").trim(),
         paid:toNum(r[iPaid]), client:(r[iClient]||"Unknown").trim(), discount:toNum(r[iDisc])
       });
     });
