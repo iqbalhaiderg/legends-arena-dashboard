@@ -1,0 +1,1382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Legends Arena Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    color-scheme: light;
+    --bg-page:#f5f7f1;
+    --bg-surface:#ffffff;
+    --bg-surface-2:#eef2e6;
+    --border:#dde3d3;
+    --border-soft:rgba(16,32,20,0.08);
+    --text-primary:#16201a;
+    --text-secondary:#4b5648;
+    --text-muted:#838f79;
+    --accent:#1b6b3e;
+    --accent-strong:#124a2a;
+    --accent-soft:#e3efe1;
+    --chart-surface:#fcfcfb;
+    --grid-line:#e1e0d9;
+    --baseline:#c3c2b7;
+    --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
+    --s5:#e87ba4; --s6:#008300; --s7:#4a3aa7; --s8:#e34948;
+    --good:#0ca30c; --warning:#b8790a; --serious:#c85a34; --critical:#d03b3b;
+    --good-bg:#e5f6e5; --warning-bg:#fdf1dc; --critical-bg:#fbe6e6;
+    --seq-low:#e4edf9; --seq-high:#0d366b;
+    --shadow: 0 1px 2px rgba(16,32,20,0.06), 0 8px 24px -12px rgba(16,32,20,0.14);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --bg-page:#0c0f0a;
+      --bg-surface:#161b13;
+      --bg-surface-2:#1d2418;
+      --border:#2a3324;
+      --border-soft:rgba(255,255,255,0.08);
+      --text-primary:#f2f4ee;
+      --text-secondary:#c3c9ba;
+      --text-muted:#8b9583;
+      --accent:#57c982;
+      --accent-strong:#7fdca4;
+      --accent-soft:rgba(87,201,130,0.12);
+      --chart-surface:#1a1a19;
+      --grid-line:#2c2f28;
+      --baseline:#3a4034;
+      --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+      --s5:#d55181; --s6:#3fbf3f; --s7:#9085e9; --s8:#e66767;
+      --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#e66767;
+      --good-bg:rgba(12,163,12,0.14); --warning-bg:rgba(250,178,25,0.14); --critical-bg:rgba(230,103,103,0.14);
+      --seq-low:#1c2733; --seq-high:#4e9bf0;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --bg-page:#0c0f0a;
+    --bg-surface:#161b13;
+    --bg-surface-2:#1d2418;
+    --border:#2a3324;
+    --border-soft:rgba(255,255,255,0.08);
+    --text-primary:#f2f4ee;
+    --text-secondary:#c3c9ba;
+    --text-muted:#8b9583;
+    --accent:#57c982;
+    --accent-strong:#7fdca4;
+    --accent-soft:rgba(87,201,130,0.12);
+    --chart-surface:#1a1a19;
+    --grid-line:#2c2f28;
+    --baseline:#3a4034;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+    --s5:#d55181; --s6:#3fbf3f; --s7:#9085e9; --s8:#e66767;
+    --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#e66767;
+    --good-bg:rgba(12,163,12,0.14); --warning-bg:rgba(250,178,25,0.14); --critical-bg:rgba(230,103,103,0.14);
+    --seq-low:#1c2733; --seq-high:#4e9bf0;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg-page);
+    color:var(--text-primary);
+    font-family:'Inter',system-ui,-apple-system,"Segoe UI",sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  h1,h2,h3,.display{font-family:'Manrope',system-ui,sans-serif; text-wrap:balance;}
+  .tnum{font-variant-numeric:tabular-nums;}
+  a{color:var(--accent);}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:28px 24px 80px;}
+
+  /* header */
+  .hero{
+    display:flex; justify-content:space-between; align-items:flex-end; gap:24px;
+    padding-bottom:22px; margin-bottom:16px; border-bottom:1px solid var(--border);
+    flex-wrap:wrap;
+  }
+  .hero-eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--accent); margin-bottom:10px;
+  }
+  .hero-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);}
+  .hero h1{font-size:32px; font-weight:800; margin:0 0 6px; letter-spacing:-0.01em;}
+  .hero p{margin:0; color:var(--text-secondary); font-size:14.5px; max-width:560px;}
+  .hero-meta{display:flex; gap:28px; flex-wrap:wrap;}
+  .hero-meta div{text-align:right;}
+  .hero-meta .k{font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:600;}
+  .hero-meta .v{font-size:17px; font-weight:700; font-family:'Manrope',sans-serif; margin-top:2px;}
+
+  /* live status bar */
+  .live-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    background:var(--bg-surface); border:1px solid var(--border); border-radius:12px;
+    padding:10px 16px; margin-bottom:32px; font-size:12.5px; color:var(--text-secondary); box-shadow:var(--shadow);
+  }
+  .live-bar .status{display:flex; align-items:center; gap:8px;}
+  .live-dot{width:8px;height:8px;border-radius:50%; background:var(--text-muted); flex:none;}
+  .live-dot.ok{background:var(--good); box-shadow:0 0 0 3px var(--good-bg);}
+  .live-dot.err{background:var(--critical); box-shadow:0 0 0 3px var(--critical-bg);}
+  .live-dot.loading{background:var(--warning); animation:pulse 1.2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+  .refresh-btn{
+    border:1px solid var(--border); background:var(--bg-surface-2); color:var(--text-primary);
+    font:inherit; font-size:12px; font-weight:700; padding:6px 12px; border-radius:8px; cursor:pointer;
+  }
+  .refresh-btn:hover{background:var(--accent-soft); color:var(--accent-strong);}
+  .refresh-btn:disabled{opacity:0.5; cursor:default;}
+
+  section{margin-bottom:40px;}
+  .section-head{display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:16px; flex-wrap:wrap;}
+  .section-head h2{font-size:19px; font-weight:800; margin:0; letter-spacing:-0.005em;}
+  .section-head .sub{font-size:13px; color:var(--text-muted);}
+  .badge-num{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:22px; height:22px; border-radius:6px; background:var(--accent-soft); color:var(--accent-strong);
+    font-size:12px; font-weight:800; margin-right:9px;
+  }
+
+  /* cards */
+  .card{
+    background:var(--bg-surface); border:1px solid var(--border); border-radius:14px;
+    box-shadow:var(--shadow); padding:20px;
+  }
+  .grid{display:grid; gap:16px;}
+  .kpi-grid{grid-template-columns:repeat(4,1fr);}
+  .g2{grid-template-columns:1.3fr 1fr;}
+  .g3{grid-template-columns:repeat(3,1fr);}
+  .g2e{grid-template-columns:1fr 1fr;}
+  @media (max-width:920px){
+    .kpi-grid{grid-template-columns:repeat(2,1fr);}
+    .g2,.g3,.g2e{grid-template-columns:1fr;}
+  }
+
+  /* stat tile */
+  .stat{padding:18px 18px 16px;}
+  .stat .label{font-size:12px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;}
+  .stat .value{font-family:'Manrope',sans-serif; font-size:26px; font-weight:800; margin-top:8px;}
+  .stat .delta{font-size:12.5px; margin-top:7px; display:flex; align-items:center; gap:5px; font-weight:600;}
+  .stat .delta.up{color:var(--good);}
+  .stat .delta.down{color:var(--critical);}
+  .stat .delta.flat{color:var(--text-muted);}
+  .stat .foot{font-size:12px; color:var(--text-muted); margin-top:7px;}
+
+  .card h3{font-size:14.5px; font-weight:700; margin:0 0 2px;}
+  .card .card-sub{font-size:12.5px; color:var(--text-muted); margin-bottom:14px;}
+
+  /* legend */
+  .legend{display:flex; flex-wrap:wrap; gap:12px 18px; margin-top:14px; font-size:12.5px;}
+  .legend .item{display:flex; align-items:center; gap:7px; color:var(--text-secondary);}
+  .legend .sw{width:10px;height:10px;border-radius:3px; flex:none;}
+
+  /* tooltip */
+  #viz-tooltip{
+    position:fixed; pointer-events:none; z-index:999; background:var(--text-primary); color:var(--bg-surface);
+    font-size:12px; padding:7px 10px; border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,0.25);
+    opacity:0; transform:translate(-50%,-115%); transition:opacity 0.1s ease; white-space:nowrap; font-weight:600;
+  }
+  #viz-tooltip .tt-sub{font-weight:500; opacity:0.75; display:block; margin-top:2px;}
+
+  svg text{font-family:'Inter',sans-serif; fill:var(--text-muted);}
+  .bar-rect{cursor:pointer;}
+  .dot-pt{cursor:pointer;}
+
+  /* tables */
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted);
+    font-weight:700; padding:0 10px 10px; border-bottom:1px solid var(--border);
+  }
+  td{padding:10px; border-bottom:1px solid var(--border-soft); color:var(--text-secondary);}
+  tr:last-child td{border-bottom:none;}
+  td.num,th.num{text-align:right; font-variant-numeric:tabular-nums;}
+  td.strong{color:var(--text-primary); font-weight:700;}
+  .tbl-wrap{overflow-x:auto;}
+  .pos{color:var(--good); font-weight:700;}
+  .neg{color:var(--critical); font-weight:700;}
+
+  .pill{
+    display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:99px;
+    font-size:11.5px; font-weight:700;
+  }
+  .pill.good{background:var(--good-bg); color:var(--good);}
+  .pill.warning{background:var(--warning-bg); color:var(--warning);}
+  .pill.critical{background:var(--critical-bg); color:var(--critical);}
+
+  /* progress / gauge */
+  .progress-track{height:14px; border-radius:99px; background:var(--bg-surface-2); overflow:hidden; border:1px solid var(--border);}
+  .progress-fill{height:100%; border-radius:99px; background:linear-gradient(90deg,var(--accent),var(--accent-strong));}
+
+  /* AI insight cards */
+  .insight-grid{grid-template-columns:repeat(2,1fr);}
+  .insight{
+    background:var(--bg-surface); border:1px solid var(--border); border-radius:14px; padding:18px;
+    display:flex; gap:14px; box-shadow:var(--shadow);
+  }
+  .insight .ico{
+    flex:none; width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+    font-size:16px; background:var(--accent-soft); color:var(--accent-strong); font-weight:800;
+  }
+  .insight h4{margin:0 0 5px; font-size:14.5px; font-weight:700;}
+  .insight p{margin:0; font-size:13px; color:var(--text-secondary);}
+  .insight .tag{display:inline-block; margin-top:9px; font-size:11px; font-weight:700; color:var(--accent-strong); background:var(--accent-soft); padding:2px 8px; border-radius:6px;}
+
+  .foot-note{margin-top:56px; padding-top:20px; border-top:1px solid var(--border); font-size:12.5px; color:var(--text-muted); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+
+  /* heatmap */
+  .heatmap-wrap{overflow-x:auto; padding-bottom:4px;}
+  .hm-cell{cursor:pointer;}
+  .hm-scale{display:flex; align-items:center; gap:8px; margin-top:14px; font-size:12px; color:var(--text-muted);}
+  .hm-scale .bar{flex:none; width:140px; height:10px; border-radius:6px; background:linear-gradient(90deg,var(--seq-low),var(--seq-high)); border:1px solid var(--border);}
+
+  /* allocation policy */
+  .alloc-bar{display:flex; height:34px; border-radius:10px; overflow:hidden; border:1px solid var(--border);}
+  .alloc-bar .seg{display:flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:700; color:#fff;}
+
+  /* banner */
+  .banner{
+    display:flex; gap:12px; align-items:flex-start; background:var(--warning-bg); border:1px solid rgba(184,121,10,0.3);
+    color:var(--warning); border-radius:12px; padding:12px 16px; margin-bottom:24px; font-size:13px; display:none;
+  }
+  .banner.show{display:flex;}
+  .banner strong{display:block; margin-bottom:2px; color:var(--text-primary);}
+</style>
+</head>
+<body>
+
+<div id="viz-tooltip"></div>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div>
+      <div class="hero-eyebrow"><span class="dot"></span>Owner Dashboard &middot; Dohar, Dhaka</div>
+      <h1>Legends Multisport Arena</h1>
+      <p>Income, expenses, slot utilization, breakeven and ROI tracking for the five-partner turf venture &mdash; live from the sales &amp; expense sheet.</p>
+    </div>
+    <div class="hero-meta">
+      <div><div class="k">Data period</div><div class="v" id="hero-period">&mdash;</div></div>
+      <div><div class="k">Partners</div><div class="v">5 &middot; equal split</div></div>
+      <div><div class="k">Total investment</div><div class="v tnum">৳37,00,000</div></div>
+    </div>
+  </div>
+
+  <div class="live-bar">
+    <div class="status">
+      <span class="live-dot loading" id="live-dot"></span>
+      <span id="live-text">Connecting to Google Sheet&hellip;</span>
+    </div>
+    <button class="refresh-btn" id="refresh-btn">Refresh now</button>
+  </div>
+
+  <div class="banner" id="fallback-banner">
+    <div>
+      <strong>Showing the last saved snapshot (26 Aug 2026)</strong>
+      <span id="banner-detail">Couldn't reach the live Google Sheet. This is usually because the sheet isn't shared as "Anyone with the link &ndash; Viewer" yet, or your browser/network is blocking Google. The numbers below are from the last successful sync and may be out of date.</span>
+    </div>
+  </div>
+
+  <!-- KPI ROW -->
+  <section>
+    <div class="grid kpi-grid">
+      <div class="card stat">
+        <div class="label">Total revenue (YTD)</div>
+        <div class="value tnum" id="kpi-revenue">&mdash;</div>
+        <div class="delta up" id="kpi-revenue-sub">&nbsp;</div>
+      </div>
+      <div class="card stat">
+        <div class="label">Total expenses (YTD)</div>
+        <div class="value tnum" id="kpi-expense">&mdash;</div>
+        <div class="delta flat" id="kpi-expense-sub">&nbsp;</div>
+      </div>
+      <div class="card stat">
+        <div class="label">Net profit (YTD)</div>
+        <div class="value tnum" id="kpi-net" style="color:var(--good)">&mdash;</div>
+        <div class="delta up" id="kpi-net-sub">&nbsp;</div>
+      </div>
+      <div class="card stat">
+        <div class="label">Investment recovered</div>
+        <div class="value tnum" id="kpi-recovered">&mdash;</div>
+        <div class="delta flat" id="kpi-recovered-sub">&nbsp;</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INCOME / EXPENSE -->
+  <section>
+    <div class="section-head">
+      <h2><span class="badge-num">1</span>Income vs. Expense</h2>
+      <span class="sub" id="sub-period-1">Monthly &middot; amounts in BDT</span>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <h3>Monthly income, expense &amp; net profit</h3>
+        <div class="card-sub">Vendor-debt repayment months can dip net profit without weak trading</div>
+        <div id="chart-monthly"></div>
+        <div class="legend">
+          <div class="item"><span class="sw" style="background:var(--s1)"></span>Income</div>
+          <div class="item"><span class="sw" style="background:var(--s8)"></span>Expense</div>
+          <div class="item"><span class="sw" style="background:var(--accent-strong);width:14px;height:3px;border-radius:2px;"></span>Net profit</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Where the money went</h3>
+        <div class="card-sub" id="sub-period-2">Expense mix</div>
+        <div id="chart-expense-donut"></div>
+        <div id="legend-expense" class="legend"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLOT ANALYSIS -->
+  <section>
+    <div class="section-head">
+      <h2><span class="badge-num">2</span>Slot &amp; Booking Analysis</h2>
+      <span class="sub" id="sub-bookings">&mdash;</span>
+    </div>
+    <div class="grid g3" style="margin-bottom:16px;">
+      <div class="card stat">
+        <div class="label">Slot utilization</div>
+        <div class="value tnum" id="kpi-util">&mdash;</div>
+        <div class="foot" id="kpi-util-sub">&nbsp;</div>
+      </div>
+      <div class="card stat">
+        <div class="label">Evening peak share</div>
+        <div class="value tnum" id="kpi-eveshare">&mdash;</div>
+        <div class="foot" id="kpi-eveshare-sub">&nbsp;</div>
+      </div>
+      <div class="card stat">
+        <div class="label">Repeat client rate</div>
+        <div class="value tnum" id="kpi-repeat">&mdash;</div>
+        <div class="foot" id="kpi-repeat-sub">&nbsp;</div>
+      </div>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <h3>Demand by time of day</h3>
+        <div class="card-sub">Bookings by daypart</div>
+        <div id="chart-daypart"></div>
+      </div>
+      <div class="card">
+        <h3>Demand by day of week</h3>
+        <div class="card-sub">Revenue by weekday</div>
+        <div id="chart-weekday"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <h3>Slot heatmap — day of week &times; hour</h3>
+      <div class="card-sub">Booking count per hourly slot &middot; darker = busier</div>
+      <div class="heatmap-wrap"><div id="chart-heatmap"></div></div>
+      <div class="hm-scale"><span>0 bookings</span><span class="bar"></span><span id="hm-max-label">max</span></div>
+    </div>
+    <div class="grid g2" style="margin-top:16px;">
+      <div class="card">
+        <h3>Peak vs. off-peak slots</h3>
+        <div class="card-sub">Revenue and pricing split</div>
+        <div id="chart-peak-donut"></div>
+        <div id="legend-peak" class="legend"></div>
+      </div>
+      <div class="card">
+        <h3>Top clients by revenue</h3>
+        <div class="card-sub" id="sub-topclients">Top 10 accounts</div>
+        <div class="tbl-wrap">
+          <table id="tbl-clients"></table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BREAKEVEN + ROI -->
+  <section>
+    <div class="section-head">
+      <h2><span class="badge-num">3</span>Path to Breakeven &amp; ROI</h2>
+      <span class="sub">Recovering the ৳37,00,000 partner investment</span>
+    </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:10px;">
+        <div>
+          <h3 style="margin-bottom:2px;">Capital recovered to date</h3>
+          <div class="card-sub" style="margin-bottom:0;" id="breakeven-asof">&nbsp;</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="display tnum" style="font-size:22px;font-weight:800;" id="breakeven-headline">&mdash;</div>
+        </div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="breakeven-fill" style="width:0%"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--text-muted);">
+        <span>0</span><span id="breakeven-pct">&mdash;</span><span class="tnum">৳37,00,000 target</span>
+      </div>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <h3>Cumulative profit vs. investment</h3>
+        <div class="card-sub">Actual (solid) to date, then two forward scenarios</div>
+        <div id="chart-breakeven"></div>
+        <div class="legend">
+          <div class="item"><span class="sw" style="background:var(--accent-strong)"></span>Actual to date</div>
+          <div class="item"><span class="sw" style="background:var(--s1)"></span>Conservative projection</div>
+          <div class="item"><span class="sw" style="background:var(--s3)"></span>Optimistic projection (debt-free)</div>
+          <div class="item"><span class="sw" style="background:var(--s8)"></span>৳37,00,000 target</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Two breakeven scenarios</h3>
+        <div class="card-sub" id="scenario-sub">Both use capital already recovered as the base</div>
+        <table>
+          <tr><th>Scenario</th><th class="num">Monthly run-rate</th><th class="num">Est. breakeven</th></tr>
+          <tr>
+            <td class="strong">Conservative<br><span style="font-weight:400;color:var(--text-muted);font-size:12px;">Recorded profit, last 3 months, incl. vendor-debt payments</span></td>
+            <td class="num tnum" id="cons-rate">&mdash;</td>
+            <td class="num strong" id="cons-eta">&mdash;</td>
+          </tr>
+          <tr>
+            <td class="strong">Optimistic<br><span style="font-weight:400;color:var(--text-muted);font-size:12px;">Once remaining vendor debt is cleared</span></td>
+            <td class="num tnum" id="opt-rate">&mdash;</td>
+            <td class="num strong" id="opt-eta">&mdash;</td>
+          </tr>
+        </table>
+        <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border);">
+          <h3 style="margin-bottom:8px;">Annualized ROI</h3>
+          <div style="display:flex; gap:22px; flex-wrap:wrap;">
+            <div><div class="label" style="font-size:11.5px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">YTD average, annualized</div><div class="value tnum" style="font-size:22px;font-weight:800;" id="roi-avg">&mdash;</div></div>
+            <div><div class="label" style="font-size:11.5px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">Recent 3-month, annualized</div><div class="value tnum" style="font-size:22px;font-weight:800;color:var(--good);" id="roi-recent">&mdash;</div></div>
+            <div><div class="label" style="font-size:11.5px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">Post debt payoff (est.)</div><div class="value tnum" style="font-size:22px;font-weight:800;color:var(--good);" id="roi-post">&mdash;</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PARTNER DISTRIBUTION -->
+  <section>
+    <div class="section-head">
+      <h2><span class="badge-num">4</span>Monthly Profit Distribution</h2>
+      <span class="sub">15% reserved as a fund, 85% distributed &mdash; five ways, Galib, Asif, Siam, Priom, Mahboob</span>
+    </div>
+    <div class="card" style="margin-bottom:16px;">
+      <h3>Reserve fund policy</h3>
+      <div class="card-sub">Applied to every profitable month: 15% held back for future investment/expenses, 85% distributed to partners</div>
+      <div class="alloc-bar">
+        <div class="seg" style="width:85%; background:var(--accent);">85% distributed</div>
+        <div class="seg" style="width:15%; background:var(--s2);">15%</div>
+      </div>
+      <div class="grid g3" style="margin-top:16px;">
+        <div class="stat" style="padding:0;">
+          <div class="label">Reserve fund, YTD</div>
+          <div class="value tnum" id="stat-reserve-ytd">&mdash;</div>
+          <div class="foot">15% of every profitable month</div>
+        </div>
+        <div class="stat" style="padding:0;">
+          <div class="label">Distributed to partners, YTD</div>
+          <div class="value tnum" id="stat-distrib-ytd">&mdash;</div>
+          <div class="foot">85% of profitable months, split 5 ways</div>
+        </div>
+        <div class="stat" style="padding:0;">
+          <div class="label">Per partner, YTD</div>
+          <div class="value tnum" id="stat-perpartner-ytd">&mdash;</div>
+          <div class="foot">Each of the 5 partners' share so far</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Monthly breakdown</h3>
+      <div class="card-sub">Loss months hold no reserve &mdash; the shortfall is absorbed, not distributed</div>
+      <div class="tbl-wrap">
+        <table id="tbl-partners"></table>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted); margin:14px 0 0;">Reserve = 15% of net profit in months with a positive profit only; distributable = the remaining 85%, split evenly five ways. A loss month has zero reserve and the full shortfall is shown as a negative distributable amount (i.e. absorbed by the business, not paid out).</p>
+    </div>
+  </section>
+
+  <!-- AI INSIGHTS -->
+  <section>
+    <div class="section-head">
+      <h2><span class="badge-num">5</span>AI Budget Planning</h2>
+      <span class="sub">Where to point cash over the next 2&ndash;3 quarters</span>
+    </div>
+    <div class="grid insight-grid">
+      <div class="insight">
+        <div class="ico">1</div>
+        <div>
+          <h4>Clear vendor debt before touching payouts</h4>
+          <p>A meaningful share of expenses is still vendor-debt repayment for original construction (Bhabi, Samrat, Baharul). Retiring it early is the single biggest lever on both cash flow and reported net margin.</p>
+          <span class="tag">Priority: high</span>
+        </div>
+      </div>
+      <div class="insight">
+        <div class="ico">2</div>
+        <div>
+          <h4>Set a monthly reserve before distributing</h4>
+          <p>Loss months happen from lumpy debt and maintenance payments. Hold back roughly one month of average opex as a buffer before any partner distribution, on top of the 15% reserve fund.</p>
+          <span class="tag">Priority: high</span>
+        </div>
+      </div>
+      <div class="insight">
+        <div class="ico">3</div>
+        <div>
+          <h4>Right-size staff cost against off-peak hours</h4>
+          <p>Staff salaries run at a fixed monthly cost against a court that's occupied a small fraction of the time. Rather than cutting headcount, redirect idle daytime hours toward the initiatives below &mdash; the fixed cost is already being paid for, so filling it is close to pure margin.</p>
+          <span class="tag">Priority: medium</span>
+        </div>
+      </div>
+      <div class="insight">
+        <div class="ico">4</div>
+        <div>
+          <h4>Budget a small marketing line from a debt-free month's surplus</h4>
+          <p>In months with zero vendor-debt drag, earmark 5&ndash;8% of net profit toward local PR/social push aimed at filling morning and midday slots (see insight 7).</p>
+          <span class="tag">Priority: medium</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2><span class="badge-num">6</span>Other AI Suggestions</h2>
+      <span class="sub">Growth, pricing and risk observations from the booking data</span>
+    </div>
+    <div class="grid insight-grid">
+      <div class="insight">
+        <div class="ico">5</div>
+        <div>
+          <h4>The evening window is the real constraint</h4>
+          <p id="insight-evening">The evening window drives most of revenue from a small slice of daily hours. That window is very likely at or near physical capacity most weekdays. Growth from here comes less from "more marketing" for peak hours and more from shifting demand into adjacent hours, or adding a second turf/court if land allows.</p>
+          <span class="tag">Growth</span>
+        </div>
+      </div>
+      <div class="insight">
+        <div class="ico">6</div>
+        <div>
+          <h4>Client concentration risk</h4>
+          <p id="insight-topclient">The top client accounts for a large share of YTD revenue. Worth understanding whether this is a reseller/team organizer; a preferential block-booking rate could lock in the relationship, but losing this single account would be a visible dent in monthly income.</p>
+          <span class="tag">Risk</span>
+        </div>
+      </div>
+      <div class="insight">
+        <div class="ico">7</div>
+        <div>
+          <h4>Off-peak hours are essentially unused</h4>
+          <p id="insight-offpeak">Morning and midday hours see very little demand. Consider a steep off-peak discount for school/corporate five-a-side leagues, coaching camps, or women-only sessions to convert dead hours into incremental revenue with near-zero marginal cost.</p>
+          <span class="tag">Growth</span>
+        </div>
+      </div>
+      <div class="insight">
+        <div class="ico">8</div>
+        <div>
+          <h4>Discounting eats into margin</h4>
+          <p id="insight-discount">A meaningful share of gross billing is discounted YTD. Peak-hour slots are already demand-constrained, so discounting there mostly gives away margin; consider reserving discounts for off-peak fill-rate campaigns instead of ad-hoc peak-hour negotiation.</p>
+          <span class="tag">Pricing</span>
+        </div>
+      </div>
+      <div class="insight">
+        <div class="ico">9</div>
+        <div>
+          <h4>Cash-heavy collection is a control risk</h4>
+          <p id="insight-cash">Most recorded payments are cash, with little use of bKash/Nagad/bank transfer despite those methods being available. Moving more bookings to mobile/bank payment would cut cash-handling risk and give partners an independent reconciliation trail.</p>
+          <span class="tag">Risk</span>
+        </div>
+      </div>
+      <div class="insight">
+        <div class="ico">10</div>
+        <div>
+          <h4>Watch for one-off maintenance spikes</h4>
+          <p id="insight-maintenance">Maintenance spend is lumpy month to month. If this is wear-related, a small monthly maintenance reserve would smooth cash flow better than absorbing repairs as one-off shocks.</p>
+          <span class="tag">Operations</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot-note">
+    <span id="foot-source">Source: Legends Dohar Sales and Expenses workbook</span>
+    <span>Built for the Turf Business project</span>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     CONFIG
+  ============================================================ */
+  const SHEET_ID = "1aVrakxcve6esM5j9LiyCX0NqJ60CG_37WvXPBcHaDcs";
+  const SALES_SHEET = "Sales Entry";
+  const EXPENSE_SHEET = "Transaction Entry";
+  const INVESTMENT = 3700000;
+  const RESERVE_RATE = 0.15;
+  const SLOTS_PER_DAY = 21;
+  const AUTO_REFRESH_MS = 15 * 60 * 1000; // 15 minutes
+  const PARTNERS = ["Galib","Asif","Siam","Priom","Mahboob"];
+
+  /* ============================================================
+     UTIL
+  ============================================================ */
+  function cv(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+  const fmt0 = n => (n<0?"-":"") + "৳" + Math.round(Math.abs(n)).toLocaleString("en-IN");
+  const fmtK = n => (Math.abs(n)>=100000 ? (n<0?"-":"")+"৳"+(Math.abs(n)/100000).toFixed(1).replace(/\.0$/,'')+"L" : fmt0(n));
+  const MONTH_ABBR = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  const tooltip = document.getElementById("viz-tooltip");
+  function showTip(evt, html){
+    tooltip.innerHTML = html;
+    tooltip.style.left = evt.clientX + "px";
+    tooltip.style.top = evt.clientY + "px";
+    tooltip.style.opacity = 1;
+  }
+  function hideTip(){ tooltip.style.opacity = 0; }
+
+  const NS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs){
+    const e = document.createElementNS(NS, tag);
+    for(const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  /* ============================================================
+     CHART FUNCTIONS (shared by live + fallback data)
+  ============================================================ */
+  function monthlyChart(container, labels, income, expense, net){
+    const W = container.clientWidth || 560, H = 300;
+    const padL = 54, padR = 14, padT = 16, padB = 30;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const svg = el("svg", {width:W, height:H, viewBox:`0 0 ${W} ${H}`, style:"overflow:visible;display:block;"});
+    const maxV = Math.max(1,...income, ...expense) * 1.12;
+    const minNet = Math.min(0, ...net);
+    const yMax = maxV, yMin = Math.min(0, minNet*1.15);
+    const yScale = v => padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
+    const ticks = 5;
+    for(let i=0;i<=ticks;i++){
+      const v = yMin + (yMax-yMin)*i/ticks;
+      const y = yScale(v);
+      svg.appendChild(el("line",{x1:padL,x2:W-padR,y1:y,y2:y,stroke:cv('--grid-line'),"stroke-width":1}));
+      const t = el("text",{x:padL-8,y:y+4,"text-anchor":"end","font-size":10.5});
+      t.textContent = fmtK(v);
+      svg.appendChild(t);
+    }
+    const y0 = yScale(0);
+    svg.appendChild(el("line",{x1:padL,x2:W-padR,y1:y0,y2:y0,stroke:cv('--baseline'),"stroke-width":1.2}));
+    const n = labels.length;
+    const groupW = plotW / Math.max(1,n);
+    const barW = Math.min(16, groupW*0.30);
+    labels.forEach((lab,i)=>{
+      const cx = padL + groupW*i + groupW/2;
+      const xi = cx - barW - 2, xe = cx + 2;
+      const incH = padT+plotH - yScale(income[i]);
+      const expH = padT+plotH - yScale(expense[i]);
+      const rIn = el("rect",{class:"bar-rect",x:xi,y:yScale(income[i]),width:barW,height:Math.max(1,incH),rx:3,fill:cv('--s1')});
+      const rEx = el("rect",{class:"bar-rect",x:xe,y:yScale(Math.max(0,expense[i])),width:barW,height:Math.max(1,expH),rx:3,fill:cv('--s8')});
+      [[rIn,"Income",income[i]],[rEx,"Expense",expense[i]]].forEach(([r,name,val])=>{
+        r.addEventListener("mousemove",e=>showTip(e,`${lab}<span class="tt-sub">${name}: ${fmt0(val)}</span>`));
+        r.addEventListener("mouseleave",hideTip);
+        svg.appendChild(r);
+      });
+      const t = el("text",{x:cx,y:H-10,"text-anchor":"middle","font-size":10.5});
+      t.textContent = lab.split('-')[0];
+      svg.appendChild(t);
+    });
+    let pathD = "";
+    const pts = labels.map((lab,i)=>[padL + groupW*i + groupW/2, yScale(net[i])]);
+    pts.forEach((p,i)=>{ pathD += (i===0?"M":"L") + p[0] + "," + p[1] + " "; });
+    svg.appendChild(el("path",{d:pathD, fill:"none", stroke:cv('--accent-strong'), "stroke-width":2.5, "stroke-linejoin":"round","stroke-linecap":"round"}));
+    pts.forEach((p,i)=>{
+      const dot = el("circle",{class:"dot-pt",cx:p[0],cy:p[1],r:4,fill:cv('--accent-strong'),stroke:cv('--chart-surface'),"stroke-width":1.5});
+      dot.addEventListener("mousemove",e=>showTip(e,`${labels[i]}<span class="tt-sub">Net profit: ${fmt0(net[i])}</span>`));
+      dot.addEventListener("mouseleave",hideTip);
+      svg.appendChild(dot);
+    });
+    container.innerHTML = "";
+    container.appendChild(svg);
+  }
+
+  function barChart(container, labels, values, opts){
+    opts = opts||{};
+    const W = container.clientWidth || 520, H = opts.height || 260;
+    const padL = 48, padR = 14, padT = 16, padB = 30;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const svg = el("svg", {width:W, height:H, viewBox:`0 0 ${W} ${H}`, style:"overflow:visible;display:block;"});
+    const maxV = Math.max(1,...values) * 1.15;
+    const yScale = v => padT + plotH - (v/maxV)*plotH;
+    const ticks = 4;
+    for(let i=0;i<=ticks;i++){
+      const v = maxV*i/ticks;
+      const y = yScale(v);
+      svg.appendChild(el("line",{x1:padL,x2:W-padR,y1:y,y2:y,stroke:cv('--grid-line'),"stroke-width":1}));
+      const t = el("text",{x:padL-8,y:y+4,"text-anchor":"end","font-size":10.5});
+      t.textContent = opts.fmt ? opts.fmt(v) : Math.round(v);
+      svg.appendChild(t);
+    }
+    const n = labels.length;
+    const slot = plotW/Math.max(1,n);
+    const barW = Math.min(opts.maxBar||34, slot*0.6);
+    labels.forEach((lab,i)=>{
+      const cx = padL + slot*i + slot/2;
+      const h = padT+plotH - yScale(values[i]);
+      const color = opts.color || cv('--s1');
+      const r = el("rect",{class:"bar-rect",x:cx-barW/2,y:yScale(values[i]),width:barW,height:Math.max(1,h),rx:4,fill:color});
+      r.addEventListener("mousemove",e=>showTip(e,`${lab}<span class="tt-sub">${opts.tipLabel||'Value'}: ${opts.fmtTip? opts.fmtTip(values[i]) : values[i]}</span>`));
+      r.addEventListener("mouseleave",hideTip);
+      svg.appendChild(r);
+      const t = el("text",{x:cx,y:H-10,"text-anchor":"middle","font-size":10.5});
+      t.textContent = lab;
+      svg.appendChild(t);
+    });
+    container.innerHTML = "";
+    container.appendChild(svg);
+  }
+
+  function donutChart(container, segments, opts){
+    opts = opts||{};
+    const W = container.clientWidth || 300, H = opts.height || 240;
+    const cx = W*0.36, cy = H/2, rOuter = Math.min(cx,cy)-8, rInner = rOuter*0.6;
+    const total = segments.reduce((a,s)=>a+s.value,0) || 1;
+    const svg = el("svg", {width:W, height:H, viewBox:`0 0 ${W} ${H}`, style:"overflow:visible;display:block;"});
+    let angle = -Math.PI/2;
+    function arcPath(a0,a1,rO,rI){
+      const x0=cx+rO*Math.cos(a0), y0=cy+rO*Math.sin(a0);
+      const x1=cx+rO*Math.cos(a1), y1=cy+rO*Math.sin(a1);
+      const x2=cx+rI*Math.cos(a1), y2=cy+rI*Math.sin(a1);
+      const x3=cx+rI*Math.cos(a0), y3=cy+rI*Math.sin(a0);
+      const large = (a1-a0)%(2*Math.PI) > Math.PI ? 1:0;
+      return `M${x0},${y0} A${rO},${rO} 0 ${large} 1 ${x1},${y1} L${x2},${y2} A${rI},${rI} 0 ${large} 0 ${x3},${y3} Z`;
+    }
+    segments.forEach(s=>{
+      const a0 = angle;
+      const frac = s.value/total;
+      const a1 = angle + frac*Math.PI*2;
+      const gap = 0.012;
+      const path = el("path",{d:arcPath(a0+gap,a1-gap,rOuter,rInner), fill:s.color});
+      path.addEventListener("mousemove",e=>showTip(e,`${s.label}<span class="tt-sub">${(frac*100).toFixed(1)}% &middot; ${fmt0(s.value)}</span>`));
+      path.addEventListener("mouseleave",hideTip);
+      svg.appendChild(path);
+      angle = a1;
+    });
+    if(opts.centerLabel){
+      const t1 = el("text",{x:cx,y:cy-4,"text-anchor":"middle","font-size":13,"font-weight":700,fill:cv('--text-primary')});
+      t1.textContent = opts.centerLabel;
+      const t2 = el("text",{x:cx,y:cy+14,"text-anchor":"middle","font-size":10.5});
+      t2.textContent = opts.centerSub||"";
+      svg.appendChild(t1); svg.appendChild(t2);
+    }
+    container.innerHTML = "";
+    container.appendChild(svg);
+  }
+
+  function hexToRgb(hex){
+    hex = hex.replace('#','');
+    if(hex.length===3) hex = hex.split('').map(c=>c+c).join('');
+    const n = parseInt(hex,16);
+    return [(n>>16)&255, (n>>8)&255, n&255];
+  }
+  function lerpColor(hexA, hexB, t){
+    const a = hexToRgb(hexA), b = hexToRgb(hexB);
+    const c = a.map((v,i)=>Math.round(v + (b[i]-v)*t));
+    return `rgb(${c[0]},${c[1]},${c[2]})`;
+  }
+  function heatmap(container, rowLabels, colLabels, matrix){
+    const cellW = 34, cellH = 30, labelColW = 84, labelRowH = 24;
+    const W = labelColW + colLabels.length*cellW, H = labelRowH + rowLabels.length*cellH;
+    const svg = el("svg", {width:W, height:H, viewBox:`0 0 ${W} ${H}`, style:"overflow:visible;display:block;"});
+    const maxV = Math.max(1,...matrix.flat());
+    const low = cv('--seq-low'), high = cv('--seq-high');
+    colLabels.forEach((c,ci)=>{
+      const t = el("text",{x:labelColW+ci*cellW+cellW/2,y:16,"text-anchor":"middle","font-size":9.5});
+      t.textContent = c;
+      svg.appendChild(t);
+    });
+    rowLabels.forEach((r,ri)=>{
+      const t = el("text",{x:labelColW-10,y:labelRowH+ri*cellH+cellH/2+4,"text-anchor":"end","font-size":10.5,"font-weight":600});
+      t.textContent = r;
+      svg.appendChild(t);
+      colLabels.forEach((c,ci)=>{
+        const v = matrix[ri][ci];
+        const frac = maxV ? v/maxV : 0;
+        const fill = v===0 ? cv('--bg-surface-2') : lerpColor(low, high, Math.pow(frac,0.55));
+        const x = labelColW+ci*cellW, y = labelRowH+ri*cellH;
+        const rect = el("rect",{class:"hm-cell",x:x+1,y:y+1,width:cellW-2,height:cellH-2,rx:4,fill});
+        rect.addEventListener("mousemove",e=>showTip(e,`${r} ${c}<span class="tt-sub">${v} booking${v===1?'':'s'}</span>`));
+        rect.addEventListener("mouseleave",hideTip);
+        svg.appendChild(rect);
+        if(v>0){
+          const lum = frac>0.55 ? '#fff' : cv('--text-primary');
+          const t = el("text",{x:x+cellW/2,y:y+cellH/2+4,"text-anchor":"middle","font-size":10,fill:lum,"font-weight":600});
+          t.textContent = v;
+          svg.appendChild(t);
+        }
+      });
+    });
+    document.getElementById("hm-max-label").textContent = maxV + " bookings";
+    container.innerHTML = "";
+    container.appendChild(svg);
+  }
+
+  function breakevenChart(container, actualLabels, actualVals, consLabels, consVals, optLabels, optVals, target){
+    const allLabels = actualLabels.concat(consLabels.slice());
+    const W = container.clientWidth || 560, H = 320;
+    const padL = 60, padR = 16, padT = 16, padB = 32;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const n = Math.max(2,allLabels.length);
+    const svg = el("svg", {width:W, height:H, viewBox:`0 0 ${W} ${H}`, style:"overflow:visible;display:block;"});
+    const yMax = target*1.08, yMin = 0;
+    const xScale = i => padL + (plotW*i)/(n-1);
+    const yScale = v => padT + plotH - ((v-yMin)/(yMax-yMin))*plotH;
+    const ticks=5;
+    for(let i=0;i<=ticks;i++){
+      const v = yMax*i/ticks;
+      const y = yScale(v);
+      svg.appendChild(el("line",{x1:padL,x2:W-padR,y1:y,y2:y,stroke:cv('--grid-line'),"stroke-width":1}));
+      const t = el("text",{x:padL-8,y:y+4,"text-anchor":"end","font-size":10.5});
+      t.textContent = fmtK(v);
+      svg.appendChild(t);
+    }
+    allLabels.forEach((lab,i)=>{
+      if(i % 3 === 0 || i===n-1){
+        const t = el("text",{x:xScale(i),y:H-10,"text-anchor":"middle","font-size":10});
+        t.textContent = lab;
+        svg.appendChild(t);
+      }
+    });
+    const yT = yScale(target);
+    svg.appendChild(el("line",{x1:padL,x2:W-padR,y1:yT,y2:yT,stroke:cv('--s8'),"stroke-width":1.6,"stroke-dasharray":"5,4"}));
+    const tt = el("text",{x:W-padR,y:yT-6,"text-anchor":"end","font-size":10.5,fill:cv('--s8'),"font-weight":700});
+    tt.textContent = "Target " + fmtK(target);
+    svg.appendChild(tt);
+    function drawLine(vals, startIdx, color, dashed){
+      let d = "";
+      vals.forEach((v,i)=>{
+        const idx = startIdx+i;
+        const x = xScale(idx), y = yScale(v);
+        d += (i===0?"M":"L") + x + "," + y + " ";
+      });
+      const p = el("path",{d, fill:"none", stroke:color, "stroke-width":2.4, "stroke-linecap":"round","stroke-linejoin":"round"});
+      if(dashed) p.setAttribute("stroke-dasharray","6,4");
+      svg.appendChild(p);
+      vals.forEach((v,i)=>{
+        const idx = startIdx+i;
+        const x = xScale(idx), y = yScale(v);
+        const dot = el("circle",{class:"dot-pt",cx:x,cy:y,r:3,fill:color});
+        dot.addEventListener("mousemove",e=>showTip(e,`${allLabels[idx]}<span class="tt-sub">${fmt0(v)}</span>`));
+        dot.addEventListener("mouseleave",hideTip);
+        svg.appendChild(dot);
+      });
+    }
+    if(actualVals.length){
+      drawLine(actualVals, 0, cv('--accent-strong'), false);
+      drawLine([actualVals[actualVals.length-1]].concat(consVals), actualLabels.length-1, cv('--s1'), true);
+      drawLine([actualVals[actualVals.length-1]].concat(optVals), actualLabels.length-1, cv('--s3'), true);
+    }
+    container.innerHTML = "";
+    container.appendChild(svg);
+  }
+
+  /* ============================================================
+     GOOGLE SHEET FETCH + CSV PARSE
+  ============================================================ */
+  function parseCSV(text){
+    const rows = [];
+    let row = [], field = "", inQuotes = false;
+    for(let i=0;i<text.length;i++){
+      const c = text[i];
+      if(inQuotes){
+        if(c === '"'){
+          if(text[i+1] === '"'){ field += '"'; i++; }
+          else inQuotes = false;
+        } else field += c;
+      } else {
+        if(c === '"') inQuotes = true;
+        else if(c === ','){ row.push(field); field=""; }
+        else if(c === '\n'){ row.push(field); rows.push(row); row=[]; field=""; }
+        else if(c === '\r'){ /* skip */ }
+        else field += c;
+      }
+    }
+    if(field.length || row.length){ row.push(field); rows.push(row); }
+    return rows;
+  }
+
+  async function fetchSheetCSV(sheetName){
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+    const res = await fetch(url, {cache:"no-store"});
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const text = await res.text();
+    const rows = parseCSV(text);
+    if(!rows.length) throw new Error("empty sheet");
+    const header = rows[0].map(h=>h.trim());
+    const body = rows.slice(1).filter(r=>r.some(c=>c && c.trim()!==""));
+    return {header, body};
+  }
+  function colIdx(header, name){
+    const i = header.findIndex(h=>h.toLowerCase().trim()===name.toLowerCase());
+    return i;
+  }
+  function parseDate(s){
+    if(!s) return null;
+    const d = new Date(s);
+    if(!isNaN(d)) return d;
+    const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if(m) return new Date(+m[3], +m[1]-1, +m[2]);
+    return null;
+  }
+  function toNum(s){
+    if(s==null) return 0;
+    const n = parseFloat(String(s).replace(/[^0-9.\-]/g,''));
+    return isNaN(n) ? 0 : n;
+  }
+  function monthKey(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0'); }
+  function monthLabel(d){ return MONTH_ABBR[d.getMonth()]+"-"+String(d.getFullYear()).slice(2); }
+
+  /* ============================================================
+     CATEGORY GROUPING FOR EXPENSES
+  ============================================================ */
+  const CAT_GROUPS = [
+    {test:c=>c==="Accounts Payable", label:"Vendor debt repayment (AP)", color:'--s8'},
+    {test:c=>/^Salary/.test(c), label:"Staff salaries", color:'--s1'},
+    {test:c=>["Maintenance","Electric Works","Generator Fixing Expenses"].includes(c), label:"Maintenance & repairs", color:'--s2'},
+    {test:c=>["Electricity Bill","Internet Bill","Phone Bill","Water Bill","Garbage Bill"].includes(c), label:"Utilities (power/net/phone)", color:'--s3'},
+    {test:c=>["Fuel","Generator Expenses"].includes(c), label:"Fuel & generator", color:'--s7'},
+    {test:c=>c==="Monthly Rent", label:"Rent", color:'--s6'},
+    {test:c=>["Accessories","Supplies","Stationaries"].includes(c), label:"Accessories & equipment", color:'--s5'},
+  ];
+  function categorize(cat){
+    cat = (cat||"").trim();
+    for(const g of CAT_GROUPS) if(g.test(cat)) return g;
+    return {label:"Other operating costs", color:'--s4'};
+  }
+
+  /* ============================================================
+     BUILD MODEL FROM RAW SHEET ROWS
+  ============================================================ */
+  const HM_HOURS = ["06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23","00","01","02"];
+  const WEEKDAY_LABELS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+  function buildModel(salesTbl, expenseTbl){
+    const H = salesTbl.header;
+    const iDate = colIdx(H,"Date"), iSlot = colIdx(H,"Slot"), iDesc = colIdx(H,"Description"),
+          iStatus = colIdx(H,"Booking Status"), iPaid = colIdx(H,"Paid Amount"), iClient = colIdx(H,"Client"),
+          iDisc = colIdx(H,"Discount"), iBookingPrice = colIdx(H,"Booking Price");
+
+    const sales = [];
+    salesTbl.body.forEach(r=>{
+      const status = (r[iStatus]||"").trim();
+      if(status.toLowerCase() !== "completed") return;
+      const d = parseDate(r[iDate]);
+      if(!d) return;
+      sales.push({
+        date:d, hour:(r[iSlot]||"").slice(0,2), desc:(r[iDesc]||"").trim(),
+        paid:toNum(r[iPaid]), client:(r[iClient]||"Unknown").trim(), discount:toNum(r[iDisc])
+      });
+    });
+    if(!sales.length) throw new Error("no completed bookings parsed");
+
+    const EH = expenseTbl.header;
+    const eDate = colIdx(EH,"Date"), eType = colIdx(EH,"Transaction Type"), eCat = colIdx(EH,"Category"), ePaid = colIdx(EH,"Amount Paid");
+    const expenses = [];
+    expenseTbl.body.forEach(r=>{
+      const type = (r[eType]||"").trim();
+      if(type && type.toLowerCase()!=="expense") return;
+      const d = parseDate(r[eDate]);
+      if(!d) return;
+      expenses.push({date:d, cat:(r[eCat]||"").trim(), amount:toNum(r[ePaid])});
+    });
+
+    // month keys present, sorted chronologically
+    const keySet = new Set();
+    sales.forEach(s=>keySet.add(monthKey(s.date)));
+    expenses.forEach(e=>keySet.add(monthKey(e.date)));
+    const monthKeys = Array.from(keySet).sort();
+    const monthDate = k => new Date(+k.split('-')[0], +k.split('-')[1]-1, 1);
+    const months = monthKeys.map(k=>monthLabel(monthDate(k)));
+
+    const incomeByMonth = Object.fromEntries(monthKeys.map(k=>[k,0]));
+    const expenseByMonth = Object.fromEntries(monthKeys.map(k=>[k,0]));
+    const apByMonth = Object.fromEntries(monthKeys.map(k=>[k,0]));
+    const expenseCatTotals = {};
+
+    sales.forEach(s=>{ incomeByMonth[monthKey(s.date)] += s.paid; });
+    expenses.forEach(e=>{
+      const mk = monthKey(e.date);
+      expenseByMonth[mk] += e.amount;
+      const grp = categorize(e.cat);
+      expenseCatTotals[grp.label] = (expenseCatTotals[grp.label]||0) + e.amount;
+      if(e.cat.trim()==="Accounts Payable") apByMonth[mk] += e.amount;
+    });
+
+    const income = monthKeys.map(k=>incomeByMonth[k]);
+    const expense = monthKeys.map(k=>expenseByMonth[k]);
+    const net = income.map((v,i)=>v-expense[i]);
+    const apMonthly = monthKeys.map(k=>apByMonth[k]);
+
+    const totalRevenue = income.reduce((a,b)=>a+b,0);
+    const totalExpense = expense.reduce((a,b)=>a+b,0);
+    const totalNet = totalRevenue - totalExpense;
+
+    // expense category donut (sorted desc)
+    const expenseCats = Object.entries(expenseCatTotals)
+      .map(([label,value])=>{
+        const grp = CAT_GROUPS.find(g=>g.label===label) || {color:'--s4'};
+        return {label, value, colorVar:grp.color};
+      })
+      .sort((a,b)=>b.value-a.value);
+
+    // daypart bands
+    const bandDef = [
+      {label:"Morning", hours:["06","07","08","09","10","11"]},
+      {label:"Midday", hours:["12","13","14","15"]},
+      {label:"Late aft.", hours:["16","17"]},
+      {label:"Evening peak", hours:["18","19","20","21"]},
+      {label:"Late night", hours:["22","23","00","01","02"]},
+    ];
+    const dpBookings = bandDef.map(()=>0), dpRevenue = bandDef.map(()=>0);
+    sales.forEach(s=>{
+      const bi = bandDef.findIndex(b=>b.hours.includes(s.hour));
+      if(bi>=0){ dpBookings[bi]++; dpRevenue[bi]+=s.paid; }
+    });
+    const eveningIdx = 3;
+    const eveningShare = totalRevenue ? dpRevenue[eveningIdx]/totalRevenue : 0;
+
+    // weekday revenue + heatmap matrix
+    const wdRevenue = [0,0,0,0,0,0,0];
+    const hmMatrix = WEEKDAY_LABELS.map(()=>HM_HOURS.map(()=>0));
+    sales.forEach(s=>{
+      const wd = (s.date.getDay()+6)%7; // Mon=0..Sun=6
+      wdRevenue[wd]+=s.paid;
+      const hi = HM_HOURS.indexOf(s.hour);
+      if(hi>=0) hmMatrix[wd][hi]++;
+    });
+
+    // peak vs offpeak
+    let peakRev=0, offRev=0;
+    sales.forEach(s=>{ if(/off/i.test(s.desc)) offRev+=s.paid; else peakRev+=s.paid; });
+
+    // top clients
+    const byClient = {};
+    sales.forEach(s=>{ byClient[s.client] = (byClient[s.client]||{count:0,revenue:0}); byClient[s.client].count++; byClient[s.client].revenue+=s.paid; });
+    const clientEntries = Object.entries(byClient).map(([name,v])=>({name,...v})).sort((a,b)=>b.revenue-a.revenue);
+    const topClients = clientEntries.slice(0,10);
+    const uniqueClients = clientEntries.length;
+    const repeatClients = clientEntries.filter(c=>c.count>1).length;
+    const repeatRate = uniqueClients ? repeatClients/uniqueClients : 0;
+
+    // utilization
+    const dates = sales.map(s=>s.date.getTime());
+    const minD = new Date(Math.min(...dates)), maxD = new Date(Math.max(...dates));
+    const daySpan = Math.max(1, Math.round((maxD-minD)/86400000));
+    const possibleSlots = SLOTS_PER_DAY * daySpan;
+    const utilization = sales.length / possibleSlots;
+
+    // discount
+    const totalDiscount = sales.reduce((a,s)=>a+s.discount,0);
+    const totalGross = totalRevenue + totalDiscount;
+
+    // reserve fund / distribution
+    const reserve = net.map(n=>n>0?n*RESERVE_RATE:0);
+    const distributable = net.map((n,i)=>n-reserve[i]);
+    const totalReserve = reserve.reduce((a,b)=>a+b,0);
+    const totalDistrib = distributable.reduce((a,b)=>a+b,0);
+
+    // breakeven scenarios
+    const cumulative = [];
+    net.reduce((acc,n)=>{ const s=acc+n; cumulative.push(s); return s; },0);
+    const recovered = cumulative.length ? cumulative[cumulative.length-1] : 0;
+
+    const last3 = net.slice(-3);
+    const consRate = last3.length ? last3.reduce((a,b)=>a+b,0)/last3.length : 0;
+    const netExAP = net.map((n,i)=>n+apMonthly[i]);
+    const last3ExAP = netExAP.slice(-3);
+    const optRate = last3ExAP.length ? last3ExAP.reduce((a,b)=>a+b,0)/last3ExAP.length : 0;
+
+    function projectMonths(rate, startCum, startMonthKey, cap){
+      const out = [];
+      let c = startCum;
+      let [y,m] = startMonthKey.split('-').map(Number);
+      for(let i=0;i<cap;i++){
+        m++; if(m>12){m=1;y++;}
+        c += rate;
+        out.push({label: MONTH_ABBR[m-1]+"-"+String(y).slice(2), value: c});
+        if(rate>0 && c>=INVESTMENT) break;
+      }
+      return out;
+    }
+    const lastKey = monthKeys[monthKeys.length-1];
+    const consProj = consRate>0 ? projectMonths(consRate, recovered, lastKey, 60) : [];
+    const optProj = optRate>0 ? projectMonths(optRate, recovered, lastKey, 60) : [];
+
+    const remainingAP = 0; // unknown live without Accounts Payable tab parsing; UI copy is generic
+
+    // avg months for ROI
+    const avgMonthly = monthKeys.length ? totalNet/monthKeys.length : 0;
+
+    return {
+      monthKeys, months, income, expense, net, apMonthly,
+      totalRevenue, totalExpense, totalNet,
+      expenseCats,
+      bandDef, dpBookings, dpRevenue, eveningShare,
+      wdRevenue, hmMatrix,
+      peakRev, offRev,
+      topClients, uniqueClients, repeatRate,
+      utilization, daySpan, bookingCount: sales.length,
+      totalDiscount, totalGross,
+      reserve, distributable, totalReserve, totalDistrib,
+      cumulative, recovered,
+      consRate, optRate, consProj, optProj,
+      avgMonthly,
+      asOf: maxD,
+    };
+  }
+
+  /* ============================================================
+     RENDER
+  ============================================================ */
+  function pct(n){ return (n*100).toFixed(1)+"%"; }
+
+  function render(model, opts){
+    opts = opts || {};
+    const m = model;
+
+    document.getElementById("hero-period").textContent = m.months.length ? (m.months[0] + " – " + m.months[m.months.length-1]) : "—";
+    document.getElementById("sub-period-1").textContent = "Monthly · amounts in BDT";
+    document.getElementById("sub-period-2").textContent = "Expense mix, " + (m.months.length ? (m.months[0] + "–" + m.months[m.months.length-1]) : "");
+    document.getElementById("sub-bookings").textContent = m.bookingCount + " completed bookings across " + m.uniqueClients + " unique clients";
+    document.getElementById("sub-topclients").textContent = "Top " + m.topClients.length + " accounts";
+    document.getElementById("foot-source").textContent = "Source: Legends Dohar Sales and Expenses workbook · data through " + m.asOf.toDateString();
+
+    // KPIs
+    document.getElementById("kpi-revenue").textContent = fmt0(m.totalRevenue);
+    document.getElementById("kpi-revenue-sub").textContent = "▲ " + m.bookingCount + " bookings · " + fmt0(m.bookingCount ? m.totalRevenue/m.bookingCount : 0) + " avg/slot";
+    document.getElementById("kpi-expense").textContent = fmt0(m.totalExpense);
+    const apTotal = m.apMonthly.reduce((a,b)=>a+b,0);
+    document.getElementById("kpi-expense-sub").textContent = m.totalExpense ? pct(apTotal/m.totalExpense) + " is vendor debt repayment" : "—";
+    document.getElementById("kpi-net").textContent = fmt0(m.totalNet);
+    document.getElementById("kpi-net").style.color = m.totalNet>=0 ? "var(--good)" : "var(--critical)";
+    document.getElementById("kpi-net-sub").textContent = (m.totalNet>=0?"▲ ":"▼ ") + (m.totalRevenue? pct(m.totalNet/m.totalRevenue):"0%") + " net margin";
+    document.getElementById("kpi-recovered").textContent = pct(m.recovered/INVESTMENT);
+    document.getElementById("kpi-recovered-sub").textContent = fmt0(m.recovered) + " of " + fmt0(INVESTMENT);
+
+    monthlyChart(document.getElementById("chart-monthly"), m.months, m.income, m.expense, m.net);
+
+    const catColors = m.expenseCats.map(c=>cv(c.colorVar));
+    donutChart(document.getElementById("chart-expense-donut"),
+      m.expenseCats.map((c,i)=>({label:c.label, value:c.value, color:catColors[i]})),
+      {centerLabel: fmtK(m.totalExpense), centerSub:"total spend"});
+    const legEx = document.getElementById("legend-expense");
+    legEx.innerHTML = "";
+    m.expenseCats.forEach((c,i)=>{
+      const d = document.createElement("div"); d.className="item";
+      d.innerHTML = `<span class="sw" style="background:${catColors[i]}"></span>${c.label} &middot; ${m.totalExpense? pct(c.value/m.totalExpense):'0%'}`;
+      legEx.appendChild(d);
+    });
+
+    document.getElementById("kpi-util").textContent = pct(m.utilization);
+    document.getElementById("kpi-util-sub").textContent = m.bookingCount + " of ~" + Math.round(m.bookingCount/m.utilization) + " possible hourly slots (" + SLOTS_PER_DAY + " slots/day × " + m.daySpan + " days)";
+    document.getElementById("kpi-eveshare").textContent = pct(m.eveningShare);
+    document.getElementById("kpi-eveshare-sub").textContent = "6–10pm window: " + m.dpBookings[3] + " bookings, " + fmt0(m.dpRevenue[3]) + " revenue";
+    document.getElementById("kpi-repeat").textContent = pct(m.repeatRate);
+    document.getElementById("kpi-repeat-sub").textContent = Math.round(m.repeatRate*m.uniqueClients) + " of " + m.uniqueClients + " clients booked more than once";
+
+    barChart(document.getElementById("chart-daypart"), m.bandDef.map(b=>b.label), m.dpBookings, {color:cv('--s1'), tipLabel:"Bookings", fmtTip:v=>v+" bookings"});
+    barChart(document.getElementById("chart-weekday"), WEEKDAY_LABELS, m.wdRevenue, {color:cv('--s3'), tipLabel:"Revenue", fmtTip:fmt0, fmt:fmtK});
+    heatmap(document.getElementById("chart-heatmap"), WEEKDAY_LABELS, HM_HOURS, m.hmMatrix);
+
+    const peakTotal = m.peakRev + m.offRev || 1;
+    donutChart(document.getElementById("chart-peak-donut"), [
+      {label:"Peak-hour slots", value:m.peakRev, color:cv('--s1')},
+      {label:"Off-peak slots", value:m.offRev, color:cv('--s4')},
+    ], {centerLabel: pct(m.peakRev/peakTotal), centerSub:"peak revenue"});
+    const legPeak = document.getElementById("legend-peak");
+    legPeak.innerHTML = "";
+    [["Peak-hour slots",m.peakRev,cv('--s1')],["Off-peak slots",m.offRev,cv('--s4')]].forEach(([label,value,color])=>{
+      const d = document.createElement("div"); d.className="item";
+      d.innerHTML = `<span class="sw" style="background:${color}"></span>${label} &middot; ${fmt0(value)}`;
+      legPeak.appendChild(d);
+    });
+
+    const tblClients = document.getElementById("tbl-clients");
+    let ch = "<tr><th>Client</th><th class='num'>Bookings</th><th class='num'>Revenue</th></tr>";
+    m.topClients.forEach(c=>{ ch += `<tr><td class="strong">${c.name}</td><td class="num tnum">${c.count}</td><td class="num tnum strong">${fmt0(c.revenue)}</td></tr>`; });
+    tblClients.innerHTML = ch;
+
+    // breakeven
+    document.getElementById("breakeven-asof").textContent = "as of " + m.asOf.toDateString();
+    document.getElementById("breakeven-headline").innerHTML = fmt0(m.recovered) + ` <span style="color:var(--text-muted); font-weight:600; font-size:14px;">/ ${fmt0(INVESTMENT)}</span>`;
+    document.getElementById("breakeven-fill").style.width = Math.min(100, Math.max(0, (m.recovered/INVESTMENT*100))) + "%";
+    document.getElementById("breakeven-pct").textContent = pct(m.recovered/INVESTMENT) + " recovered";
+
+    const consVals = m.consProj.map(p=>p.value), consLabels = m.consProj.map(p=>p.label);
+    const optVals = m.optProj.map(p=>p.value), optLabels = m.optProj.map(p=>p.label);
+    breakevenChart(document.getElementById("chart-breakeven"), m.months, m.cumulative, consLabels, consVals, optLabels, optVals, INVESTMENT);
+
+    document.getElementById("cons-rate").textContent = fmt0(m.consRate) + " / mo";
+    document.getElementById("cons-eta").innerHTML = (m.consProj.length ? m.consProj[m.consProj.length-1].label : "n/a") + `<br><span style="font-weight:400;color:var(--text-muted);font-size:12px;">~${m.consProj.length} months out</span>`;
+    document.getElementById("opt-rate").textContent = fmt0(m.optRate) + " / mo";
+    document.getElementById("opt-eta").innerHTML = (m.optProj.length ? m.optProj[m.optProj.length-1].label : "n/a") + `<br><span style="font-weight:400;color:var(--text-muted);font-size:12px;">~${m.optProj.length} months out</span>`;
+
+    const roiAvg = m.avgMonthly*12/INVESTMENT;
+    const roiRecent = m.consRate*12/INVESTMENT;
+    const roiPost = m.optRate*12/INVESTMENT;
+    document.getElementById("roi-avg").textContent = pct(roiAvg);
+    document.getElementById("roi-recent").textContent = pct(roiRecent);
+    document.getElementById("roi-post").textContent = pct(roiPost);
+
+    // partner distribution
+    const tblP = document.getElementById("tbl-partners");
+    let ph = "<tr><th>Month</th><th class='num'>Net profit</th><th class='num'>Reserve (15%)</th><th class='num'>Distributable (85%)</th>" + PARTNERS.map(p=>`<th class="num">${p}</th>`).join("") + "</tr>";
+    m.months.forEach((mo,i)=>{
+      const share = m.distributable[i]/5;
+      ph += `<tr><td class="strong">${mo}</td>`
+          + `<td class="num tnum ${m.net[i]<0?'neg':''}">${fmt0(m.net[i])}</td>`
+          + `<td class="num tnum">${fmt0(m.reserve[i])}</td>`
+          + `<td class="num tnum strong ${m.distributable[i]<0?'neg':'pos'}">${fmt0(m.distributable[i])}</td>`
+          + PARTNERS.map(()=>`<td class="num tnum ${share<0?'neg':''}">${fmt0(share)}</td>`).join("")
+          + `</tr>`;
+    });
+    ph += `<tr><td class="strong">YTD Total</td>`
+        + `<td class="num tnum strong">${fmt0(m.totalNet)}</td>`
+        + `<td class="num tnum strong">${fmt0(m.totalReserve)}</td>`
+        + `<td class="num tnum strong pos">${fmt0(m.totalDistrib)}</td>`
+        + PARTNERS.map(()=>`<td class="num tnum strong">${fmt0(m.totalDistrib/5)}</td>`).join("")
+        + `</tr>`;
+    tblP.innerHTML = ph;
+    document.getElementById("stat-reserve-ytd").textContent = fmt0(m.totalReserve);
+    document.getElementById("stat-distrib-ytd").textContent = fmt0(m.totalDistrib);
+    document.getElementById("stat-perpartner-ytd").textContent = fmt0(m.totalDistrib/5);
+
+    // dynamic insight copy
+    const topClient = m.topClients[0];
+    if(topClient){
+      document.getElementById("insight-topclient").textContent =
+        `"${topClient.name}" alone accounts for ${fmt0(topClient.revenue)} (${topClient.count} bookings, ${pct(topClient.revenue/m.totalRevenue)} of YTD revenue). Worth understanding whether this is a reseller/team organizer; a preferential block-booking rate could lock in the relationship, but losing this single account would be a visible dent in monthly income.`;
+    }
+    document.getElementById("insight-evening").textContent =
+      `The 6–10pm window delivers ${pct(m.eveningShare)} of revenue from just 4 of ~21 daily hours. That window is very likely at or near physical capacity most weekdays. Growth from here comes less from "more marketing" for peak hours and more from shifting demand into adjacent hours, or adding a second turf/court if land allows.`;
+    document.getElementById("insight-offpeak").textContent =
+      `Morning and midday hours produced just ${m.dpBookings[0]+m.dpBookings[1]} bookings out of ${m.bookingCount} total. Consider a steep off-peak discount for school/corporate five-a-side leagues, coaching camps, or women-only sessions to convert dead hours into incremental revenue with near-zero marginal cost.`;
+    document.getElementById("insight-discount").textContent =
+      `${fmt0(m.totalDiscount)} was discounted YTD against ${fmt0(m.totalGross)} in gross bookings (${m.totalGross? pct(m.totalDiscount/m.totalGross):'0%'}). Peak-hour slots are already demand-constrained, so discounting there mostly gives away margin; consider reserving discounts for off-peak fill-rate campaigns instead.`;
+
+    if(!opts.silent){
+      document.getElementById("scenario-sub").textContent = `Both use the ${fmt0(m.recovered)} already recovered as the base`;
+    }
+  }
+
+  /* ============================================================
+     STATIC FALLBACK SNAPSHOT (last known good, 26 Aug 2026)
+  ============================================================ */
+  function fallbackModel(){
+    const months = ["Jan-26","Feb-26","Mar-26","Apr-26","May-26","Jun-26","Jul-26","Aug-26"];
+    const income = [38500,110200,103060,165350,277050,201500,339940,278170];
+    const expense = [28455,90715,67770,67880,291975,223735,71065,93780];
+    const apMonthly = [5000,57000,28500,6500,205000,80000,0,50000];
+    const net = income.map((v,i)=>v-expense[i]);
+    const cumulative = []; net.reduce((a,n)=>{const s=a+n;cumulative.push(s);return s;},0);
+    const reserve = net.map(n=>n>0?n*RESERVE_RATE:0);
+    const distributable = net.map((n,i)=>n-reserve[i]);
+    const bandDef = [
+      {label:"Morning", hours:[]},{label:"Midday", hours:[]},{label:"Late aft.", hours:[]},
+      {label:"Evening peak", hours:[]},{label:"Late night", hours:[]},
+    ];
+    const hmMatrix = [
+      [0,0,0,0,1,0,0,0,0,0,1,2,13,22,21,18,8,9,0,0,0],
+      [0,0,1,0,0,0,0,0,0,0,1,3,9,16,16,23,9,6,1,0,0],
+      [0,0,0,0,0,0,0,0,0,0,2,5,9,14,16,21,10,6,1,0,0],
+      [0,0,0,0,1,0,0,0,0,2,3,4,9,18,17,15,11,8,4,1,0],
+      [1,1,1,2,1,1,0,0,0,2,6,11,18,21,23,23,12,10,2,0,0],
+      [0,0,0,0,1,1,1,0,0,1,5,3,12,19,21,22,16,5,2,0,0],
+      [0,0,0,0,0,0,0,1,1,1,1,4,12,18,24,22,7,6,0,0,0],
+    ];
+    const topClients = [
+      {name:"Shobuj",count:54,revenue:114230},{name:"Vibe with Mahin",count:16,revenue:30700},
+      {name:"Noman",count:13,revenue:27650},{name:"Darul Nayeem",count:13,revenue:27200},
+      {name:"Udoy/Sabbir",count:13,revenue:27200},{name:"Tusher",count:13,revenue:26600},
+      {name:"Rifat",count:12,revenue:26200},{name:"Samir Bepari",count:10,revenue:21200},
+      {name:"Tauhid",count:12,revenue:18300},{name:"Imran",count:8,revenue:17750},
+    ];
+    const totalRevenue = income.reduce((a,b)=>a+b,0), totalExpense = expense.reduce((a,b)=>a+b,0);
+    const consRate = 143677, optRate = 187010, recovered = cumulative[cumulative.length-1];
+    function projectMonths(rate, startCum, cap){
+      const out=[]; let c=startCum, y=2026,m=8;
+      for(let i=0;i<cap;i++){ m++; if(m>12){m=1;y++;} c+=rate; out.push({label:MONTH_ABBR[m-1]+"-"+String(y).slice(2), value:c}); if(c>=INVESTMENT) break; }
+      return out;
+    }
+    return {
+      monthKeys: months, months, income, expense, net, apMonthly,
+      totalRevenue, totalExpense, totalNet: totalRevenue-totalExpense,
+      expenseCats: [
+        {label:"Vendor debt repayment (AP)", value:432000, colorVar:'--s8'},
+        {label:"Staff salaries", value:157700, colorVar:'--s1'},
+        {label:"Other operating costs", value:98240, colorVar:'--s4'},
+        {label:"Maintenance & repairs", value:97610, colorVar:'--s2'},
+        {label:"Utilities (power/net/phone)", value:44245, colorVar:'--s3'},
+        {label:"Fuel & generator", value:37500, colorVar:'--s7'},
+        {label:"Rent", value:35000, colorVar:'--s6'},
+        {label:"Accessories & equipment", value:33080, colorVar:'--s5'},
+      ],
+      bandDef, dpBookings:[12,9,51,492,134], dpRevenue:[19800,12700,88150,1099325,293795], eveningShare:0.726,
+      wdRevenue:[209550,184600,179830,208000,287450,234480,209860], hmMatrix,
+      peakRev:1429420, offRev:84350,
+      topClients, uniqueClients:313, repeatRate:0.409,
+      utilization:0.152, daySpan:219, bookingCount:698,
+      totalDiscount:200780, totalGross:1714550,
+      reserve, distributable, totalReserve: reserve.reduce((a,b)=>a+b,0), totalDistrib: distributable.reduce((a,b)=>a+b,0),
+      cumulative, recovered,
+      consRate, optRate, consProj: projectMonths(consRate, recovered, 60), optProj: projectMonths(optRate, recovered, 60),
+      avgMonthly: (totalRevenue-totalExpense)/8,
+      asOf: new Date(2026,7,26),
+    };
+  }
+
+  /* ============================================================
+     LOAD ORCHESTRATION
+  ============================================================ */
+  const liveDot = document.getElementById("live-dot");
+  const liveText = document.getElementById("live-text");
+  const banner = document.getElementById("fallback-banner");
+  const bannerDetail = document.getElementById("banner-detail");
+  const refreshBtn = document.getElementById("refresh-btn");
+
+  function setStatus(state, text){
+    liveDot.className = "live-dot " + state;
+    liveText.textContent = text;
+  }
+
+  async function loadLive(){
+    setStatus("loading", "Fetching latest data from Google Sheet…");
+    refreshBtn.disabled = true;
+    try{
+      const [sales, expenses] = await Promise.all([
+        fetchSheetCSV(SALES_SHEET),
+        fetchSheetCSV(EXPENSE_SHEET),
+      ]);
+      const model = buildModel(sales, expenses);
+      render(model);
+      banner.classList.remove("show");
+      const now = new Date();
+      setStatus("ok", "Live · last synced " + now.toLocaleString());
+    } catch(err){
+      console.error("Live fetch failed:", err);
+      render(fallbackModel());
+      banner.classList.add("show");
+      bannerDetail.textContent = "Couldn't reach the live Google Sheet (" + err.message + "). This is usually because the sheet isn't shared as \"Anyone with the link – Viewer\" yet, or the network is blocking Google. Showing the last saved snapshot instead.";
+      setStatus("err", "Offline · showing last saved snapshot");
+    } finally {
+      refreshBtn.disabled = false;
+    }
+  }
+
+  refreshBtn.addEventListener("click", loadLive);
+  window.addEventListener("resize", ()=>{ /* charts redraw on next load; cheap no-op guard */ });
+
+  loadLive();
+  setInterval(loadLive, AUTO_REFRESH_MS);
+})();
+</script>
+</body>
+</html>
